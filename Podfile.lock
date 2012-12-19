@@ -1,0 +1,7 @@
+PODS:
+  - GrowingTextView (1.0)
+  - TPKeyboardAvoidingTableView (1.0)
+
+DEPENDENCIES:
+  - GrowingTextView (from `CustomPodspecs/GrowingTextView.podspec')
+  - TPKeyboardAvoidingTableView (from `CustomPodspecs/TPKeyboardAvoidingTableView.podspec')
