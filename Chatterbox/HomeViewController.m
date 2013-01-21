@@ -26,7 +26,7 @@
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        // Custom initialization
+        self.title = @"Categories";
     }
     return self;
 }
@@ -36,23 +36,33 @@
     [super viewDidLoad];
     
     UIScrollView *scrollView = [[UIScrollView alloc]initWithFrame:self.view.frame];
+    scrollView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_paper_bg"]];
     self.view = scrollView;
     
     NSArray *topics = @[@"News",@"Sports",@"Politics",@"Finance",@"Random"];
     
     // layout topics
-    int squareButtonDimensions = 120;
-    int padding = 30;
+    int padding = 20;
+    int squareButtonDimensions = 130;//([UIScreen mainScreen].bounds.size.width/2)-padding-(padding/2);
     
     int row = 0;
     int column = 0;
     for (NSString *topic in topics)
     {
-        UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        button.frame = CGRectMake(0, 0, squareButtonDimensions, squareButtonDimensions);
-        CGPoint buttonCenter = CGPointMake(self.view.frame.size.width/4 + column*self.view.frame.size.width/2, squareButtonDimensions/2 + (padding + squareButtonDimensions) * row);
-        button.layer.position = buttonCenter;
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+        button.frame = CGRectMake(padding + column*(padding+squareButtonDimensions), padding + row*(padding+squareButtonDimensions), squareButtonDimensions, squareButtonDimensions);
         [button setTitle:topic forState:UIControlStateNormal];
+        [button setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+        [button setTitleColor:[UIColor orangeColor] forState:UIControlStateHighlighted];
+        [button setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        button.titleLabel.font = [UIFont fontWithName:@"Cochin" size:22.0];
+        [button.titleLabel setShadowOffset:CGSizeMake(0, 1)];
+        [button setBackgroundImage:[UIImage imageNamed:@"category_glass_button"] forState:UIControlStateNormal];
+        [button setShowsTouchWhenHighlighted:YES];
+        button.layer.backgroundColor = [[UIColor clearColor] CGColor];
+        button.layer.cornerRadius = 10.0f;
+        button.layer.masksToBounds = YES;
+        [button.layer setShadowOffset:CGSizeMake(0, 5)];
         [button addTarget:self action:@selector(startConversation:) forControlEvents:UIControlEventTouchUpInside];
         [scrollView addSubview:button];
         
@@ -136,7 +146,6 @@
                              [ChatterboxDataStore saveContext:&error];
                              if (!error) {
                                  [[NSNotificationCenter defaultCenter]postNotificationName:@"NewConvo" object:self];
-                                 NSString *name = [NSString stringWithFormat:@"Convo%@",conversation.objectId];
                                  [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"Convo%@",conversation.objectId]];
                                  
                                  UIAlertView *alert = [[UIAlertView alloc]initWithTitle:alertTitle message:alertMessage delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];

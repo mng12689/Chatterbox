@@ -18,13 +18,18 @@
 @property (readonly, strong, nonatomic) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
 + (void)saveContext:(NSError**)error;
++ (void)refreshObject:(id)object mergeChanges:(BOOL)merge;
 + (NSURL*)applicationDocumentsDirectory;
 
-+ (NSArray*)allConversations;
 + (NSArray*)allTopics;
 
++ (NSArray*)allConversations;
++ (Conversation*)conversationWithParseID:(NSString*)parseID;
 + (Conversation*)createConversationFromParseObject:(PFObject*)object;
+
++ (Message*)messageWithParseID:(NSString*)parseID;
 + (Message*)createMessageFromParseObject:(PFObject*)object andConversation:(Conversation*)conversation;
++ (void)updateMessage:(Message*)message withParseObjectDataAfterSave:(PFObject*)parseObject;
 
 //+ (id) createNewAttribute:(NSString*)attributeType;
 //+ (void) deleteObject:(NSManagedObject*)object;

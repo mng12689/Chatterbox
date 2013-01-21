@@ -11,6 +11,7 @@
 
 @interface TestViewController : UIViewController
 
+@property (strong,nonatomic,readonly) Conversation *conversation;
 -(id)initWithConversation:(Conversation*)conversation;
 
 @end

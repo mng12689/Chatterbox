@@ -13,6 +13,8 @@
 #import "ChatterboxDataStore.h"
 #import "Message.h"
 #import "TestViewController.h"
+#import "LastMessageCell.h"
+#import <QuartzCore/QuartzCore.h>
 
 @interface ConversationsViewController () <UITableViewDataSource, UITableViewDelegate>
 
@@ -31,9 +33,15 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self){
         if ([PFUser currentUser]){
+            self.title = @"Conversations";
             [[NSNotificationCenter defaultCenter] addObserverForName:@"NewConvo" object:nil queue:nil usingBlock:^(NSNotification *note) {
                 [self loadUserConversations];
                 [self.table reloadData];
+            }];
+            [[NSNotificationCenter defaultCenter] addObserverForName:@"NewMessages" object:nil queue:nil usingBlock:^(NSNotification *note) {
+                if ([note.object isKindOfClass:[TestViewController class]]) {
+                    [self.table reloadRowsAtIndexPaths:@[[self indexPathForConversation:[[note userInfo]objectForKey:@"conversation"]]] withRowAnimation:UITableViewRowAnimationNone];
+                }
             }];
             [self loadUserConversations];
         }
@@ -46,6 +54,26 @@
     [super viewDidLoad];
     self.table.dataSource = self;
     self.table.delegate = self;
+    self.table.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_paper_bg"]];
+    UIView *clearView = [[UIView alloc]initWithFrame:self.navigationController.navigationBar.frame];
+    clearView.backgroundColor = [UIColor clearColor];
+    self.table.tableHeaderView = clearView;
+
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
+    label.backgroundColor = [UIColor clearColor];
+    label.font = [UIFont fontWithName:@"Cochin" size:24.0];
+    label.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
+    label.shadowOffset = CGSizeMake(0, 1);
+    label.textAlignment = UITextAlignmentCenter;
+    label.textColor = [UIColor lightGrayColor]; // change this color
+    self.navigationItem.titleView = label;
+    label.text = NSLocalizedString(self.title, @"title for nav bar");
+    [label sizeToFit];
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    [self.table deselectRowAtIndexPath:[self.table indexPathForSelectedRow] animated:YES];
 }
 
 - (void)didReceiveMemoryWarning
@@ -84,31 +112,31 @@
     }
 }
 
+-(NSIndexPath*)indexPathForConversation:(Conversation*)conversation
+{
+    int row = [[self.conversationsByTopic objectForKey:conversation.topic]indexOfObject:conversation];
+    int section = [[[self.conversationsByTopic allKeys]sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)]indexOfObject:conversation.topic];
+    return [NSIndexPath indexPathForRow:row inSection:section];
+}
+
+#pragma mark - UITableViewDataSource methods
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ConversationCell"];
+    LastMessageCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ConversationCell"];
     
     if (!cell){
-        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"ConversationCell"];
+        cell = [[LastMessageCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"ConversationCell"];
+        cell.selectionStyle = UITableViewCellSelectionStyleGray;
     }
     
     NSString *topic = [self.topics objectAtIndex:indexPath.section];
     Conversation *conversation = [[self.conversationsByTopic valueForKey:topic] objectAtIndex:indexPath.row];
     
-    cell.textLabel.text = conversation.status;
-    if ([conversation lastMessage])
-        cell.detailTextLabel.text = [[conversation lastMessage]text];
+    cell.statusLabel.text = [conversation.status isEqualToString:@"pending"] ? @"Pending" : @"Active";
+    cell.statusLabel.layer.shadowColor = [conversation.status isEqualToString:@"pending"] ? [[UIColor clearColor]CGColor] : [[UIColor greenColor]CGColor];
+    cell.messageLabel.text = [conversation lastMessage] ? [[conversation lastMessage]text] : @"(No messages yet)";
     
     return cell;
-}
-
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    NSString *topic = [self.topics objectAtIndex:indexPath.section];
-    Conversation *conversation = [[self.conversationsByTopic valueForKey:topic] objectAtIndex:indexPath.row];
-    
-    TestViewController *dialogueViewController = [[TestViewController alloc]initWithConversation:conversation];
-    [self.navigationController pushViewController:dialogueViewController animated:YES];
 }
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -118,9 +146,7 @@
 
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
-    
     return [self.topics objectAtIndex:section];
-
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -132,5 +158,16 @@
 {
     return 70;
 }
+
+#pragma mark - UITableViewDelegate methods
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{    
+    NSString *topic = [self.topics objectAtIndex:indexPath.section];
+    Conversation *conversation = [[self.conversationsByTopic valueForKey:topic] objectAtIndex:indexPath.row];
+    
+    TestViewController *dialogueViewController = [[TestViewController alloc]initWithConversation:conversation];
+    [self.navigationController pushViewController:dialogueViewController animated:YES];
+}
+
 
 @end

@@ -23,8 +23,8 @@
 - (Message*)lastMessage
 {
     if (self.messages.count) {
-        NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc]initWithKey:@"createdAt" ascending:NO];
-        return [[self.messages sortedArrayUsingDescriptors:@[sortDescriptor]] objectAtIndex:0];
+        NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc]initWithKey:@"createdAt" ascending:YES];
+        return [[self.messages sortedArrayUsingDescriptors:@[sortDescriptor]] lastObject];
     }
     return nil;
 }

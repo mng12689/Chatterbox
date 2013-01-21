@@ -57,7 +57,7 @@ NSPersistentStoreCoordinator *_psc;
     conversation.updatedAt = object.updatedAt;
     conversation.status = [object valueForKey:@"status"];
     conversation.topic = [object valueForKey:@"topic"];
-    conversation.user1ID = [[object valueForKey:@"user1"] objectId];
+    conversation.user1ID = [[object valueForKey:@"user1"]objectId];
     conversation.user2ID = [[object valueForKey:@"user2"]objectId];
     conversation.messages = [object valueForKey:@"messages"];
     
@@ -70,12 +70,9 @@ NSPersistentStoreCoordinator *_psc;
     message.parseObjectID = object.objectId;
     message.createdAt = object.createdAt;
     message.updatedAt = object.updatedAt;
-    message.senderID = [object valueForKey:@"senderID"];
+    message.senderID = [[object valueForKey:@"sender"]objectId];
     message.text = [object valueForKey:@"text"];
     message.conversation = conversation;
-    
-    NSError *error = nil;
-    [self saveContext:&error];
     
     return message;
 }
@@ -84,15 +81,43 @@ NSPersistentStoreCoordinator *_psc;
 {
     NSFetchRequest *fetchRequest = [NSFetchRequest new];
     fetchRequest.entity = [[ChatterboxDataStore model].entitiesByName objectForKey:@"Conversation"];
-    
     NSError *error;
     return [[self context] executeFetchRequest:fetchRequest error:&error];
 }
 
++ (Conversation*)conversationWithParseID:(NSString*)parseID;
+{
+    NSFetchRequest *fetchRequest = [NSFetchRequest new];
+    fetchRequest.entity = [[ChatterboxDataStore model].entitiesByName objectForKey:@"Conversation"];
+    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"parseObjectID like %@",parseID];
+    NSError *error;
+    return [[[self context] executeFetchRequest:fetchRequest error:&error]lastObject];
+}
+
++ (Message*)messageWithParseID:(NSString*)parseID;
+{
+    NSFetchRequest *fetchRequest = [NSFetchRequest new];
+    fetchRequest.entity = [[ChatterboxDataStore model].entitiesByName objectForKey:@"Message"];
+    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"parseObjectID like %@",parseID];
+    NSError *error;
+    return [[[self context] executeFetchRequest:fetchRequest error:&error]lastObject];
+}
+
++ (void)updateMessage:(Message*)message withParseObjectDataAfterSave:(PFObject*)parseObject;
+{
+    message.createdAt = parseObject.createdAt;
+    message.updatedAt = parseObject.updatedAt;
+    message.parseObjectID = parseObject.objectId;
+}
 + (void) deleteObject:(NSManagedObject*)object
 {
     [[self context] deleteObject:object];
     [self saveContext:nil];
+}
+
++ (void)refreshObject:(id)object mergeChanges:(BOOL)merge
+{
+    [[self context]refreshObject:object mergeChanges:merge];
 }
 
 + (void)saveContext:(NSError**)error

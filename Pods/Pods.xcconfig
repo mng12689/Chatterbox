@@ -1,7 +1,7 @@
 PODS_ROOT = ${SRCROOT}/Pods
 PODS_HEADERS_SEARCH_PATHS = ${PODS_PUBLIC_HEADERS_SEARCH_PATHS}
 ALWAYS_SEARCH_USER_PATHS = YES
-OTHER_LDFLAGS = -ObjC
+OTHER_LDFLAGS = -ObjC -framework CoreGraphics -framework QuartzCore
 HEADER_SEARCH_PATHS = ${PODS_HEADERS_SEARCH_PATHS}
-PODS_BUILD_HEADERS_SEARCH_PATHS = "${PODS_ROOT}/BuildHeaders" "${PODS_ROOT}/BuildHeaders/GrowingTextView" "${PODS_ROOT}/BuildHeaders/TPKeyboardAvoidingTableView"
-PODS_PUBLIC_HEADERS_SEARCH_PATHS = "${PODS_ROOT}/Headers" "${PODS_ROOT}/Headers/GrowingTextView" "${PODS_ROOT}/Headers/TPKeyboardAvoidingTableView"
+PODS_BUILD_HEADERS_SEARCH_PATHS = "${PODS_ROOT}/BuildHeaders" "${PODS_ROOT}/BuildHeaders/DCIntrospect" "${PODS_ROOT}/BuildHeaders/GrowingTextView" "${PODS_ROOT}/BuildHeaders/MBProgressHUD"
+PODS_PUBLIC_HEADERS_SEARCH_PATHS = "${PODS_ROOT}/Headers" "${PODS_ROOT}/Headers/DCIntrospect" "${PODS_ROOT}/Headers/GrowingTextView" "${PODS_ROOT}/Headers/MBProgressHUD"

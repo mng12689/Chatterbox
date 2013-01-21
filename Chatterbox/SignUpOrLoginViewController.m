@@ -52,7 +52,7 @@
         self.doneButton.titleLabel.text = @"Sign Up";
         self.titleLabel.text = @"Sign Up";
     }
-
+    self.passwordTextField.secureTextEntry = YES;
 }
 
 - (void)didReceiveMemoryWarning
@@ -79,7 +79,7 @@
             }
             else
             {
-                NSString *errorString = [[error userInfo] objectForKey:@"error"];
+                NSString *errorString = [[error userInfo]objectForKey:@"error"];
                 UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Error" message:errorString delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
                 [alert show];
             }
@@ -110,4 +110,11 @@
         [query includeKey:@"]
     }*/
 }
+
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self.usernameTextField resignFirstResponder];
+    [self.passwordTextField resignFirstResponder];
+}
+
 @end

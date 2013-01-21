@@ -1,7 +1,9 @@
 PODS:
+  - DCIntrospect (0.0.2)
   - GrowingTextView (1.0)
-  - TPKeyboardAvoidingTableView (1.0)
+  - MBProgressHUD (0.5)
 
 DEPENDENCIES:
+  - DCIntrospect (from `https://raw.github.com/CocoaPods/Specs/master/DCIntrospect/0.0.2/DCIntrospect.podspec')
   - GrowingTextView (from `CustomPodspecs/GrowingTextView.podspec')
-  - TPKeyboardAvoidingTableView (from `CustomPodspecs/TPKeyboardAvoidingTableView.podspec')
+  - MBProgressHUD (from `https://raw.github.com/CocoaPods/Specs/master/MBProgressHUD/0.5/MBProgressHUD.podspec')

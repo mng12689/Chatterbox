@@ -10,6 +10,14 @@
 #import "HomeViewController.h"
 #import "ConversationsViewController.h"
 #import <Parse/Parse.h>
+#import "DCIntrospect.h"
+#import "ChatterboxDataStore.h"
+#import "Conversation.h"
+
+typedef enum {
+    CBAPNTypeConversationStarted,
+    CBAPNTypeNewMessage
+}CBAPNType;
 
 @implementation AppDelegate
 
@@ -25,16 +33,30 @@
      UIRemoteNotificationTypeSound];
     
     HomeViewController *homeViewController = [HomeViewController new];
-    
+    homeViewController.tabBarItem = [[UITabBarItem alloc]initWithTitle:@"Categories" image:[UIImage imageNamed:@"category_tab_bar_icon"] tag:589340];
+
     ConversationsViewController *conversationsViewController = [ConversationsViewController new];
     UINavigationController *navController = [[UINavigationController alloc]initWithRootViewController:conversationsViewController];
-    
+    [navController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
+    navController.tabBarItem = [[UITabBarItem alloc]initWithTitle:@"Conversations" image:[UIImage imageNamed:@"speech_bubble_icon"] tag:589340];
+
     UITabBarController *tabBarController = [UITabBarController new];
     tabBarController.viewControllers = @[homeViewController,navController];
     self.window.rootViewController = tabBarController;
     
+    [[UIApplication sharedApplication] setStatusBarHidden:YES];
+    [[UINavigationBar appearance]setBackgroundImage:[UIImage imageNamed:@"transparent_nav_bar"] forBarMetrics:UIBarMetricsDefault];
+    [[[UINavigationBar appearance]layer]setShadowOffset:CGSizeMake(0, 5)];
+    [[[UINavigationBar appearance]layer]setShadowColor:[[UIColor darkGrayColor]CGColor]];
+    [[[UINavigationBar appearance]layer]setShadowOpacity:.5];
+    [[UIBarButtonItem appearance]setTintColor:[UIColor colorWithWhite:.97 alpha:1]];
+    
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
+    
+#if TARGET_IPHONE_SIMULATOR
+    [[DCIntrospect sharedIntrospector] start];
+#endif
 
     return YES;
 }
@@ -77,7 +99,34 @@
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
 {
     [PFPush handlePush:userInfo];
-    //[[NSNotificationCenter defaultCenter]postNotificationName: object:nil];
+    
+    /*CBAPNType notificationType = [[userInfo objectForKey:@"notifType"]intValue];
+    NSString *convoID = [userInfo objectForKey:@"convoID"];
+    Conversation *conversation = [ChatterboxDataStore createConversationFromParseObject:parseConversation];
+    switch (notificationType) {
+        case CBAPNTypeConversationStarted:{
+            //grab convo from parse
+            break;
+        }
+        case CBAPNTypeNewMessage:{
+            
+            PFQuery *query = [PFQuery queryWithClassName:@"Message"];
+            [query whereKey:@"conversation.id" equalTo:convoID];
+            [query whereKey:@"createdAt" greaterThan:conversation.createdAt];
+            [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                for (PFObject *object in objects) {
+                    [ChatterboxDataStore createMessageFromParseObject:object andConversation:conversation];
+                }
+                NSError *err;
+                [ChatterboxDataStore saveContext:&err];
+                [[NSNotificationCenter defaultCenter]postNotificationName:@"NewMessages" object:self userInfo:[NSDictionary dictionaryWithObject:conversation forKey:@"conversation"]];
+            }];
+            break;
+        }
+        default:
+            break;
+    }
+    [[NSNotificationCenter defaultCenter]postNotificationName:@"PushReceived" object:self userInfo:userInfo];*/
 }
 
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error
