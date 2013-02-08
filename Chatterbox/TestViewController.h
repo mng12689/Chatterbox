@@ -7,11 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-@class Conversation;
+@class CBConversation;
 
 @interface TestViewController : UIViewController
 
-@property (strong,nonatomic,readonly) Conversation *conversation;
--(id)initWithConversation:(Conversation*)conversation;
+@property (strong,nonatomic,readonly) CBConversation *conversation;
+-(id)initWithConversation:(CBConversation*)conversation;
 
 @end

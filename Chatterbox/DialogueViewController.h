@@ -7,10 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-@class Conversation;
+@class CBConversation;
 
 @interface DialogueViewController : UIViewController
 
--(id)initWithConversation:(Conversation*)conversation;
+-(id)initWithConversation:(CBConversation*)conversation;
 
 @end

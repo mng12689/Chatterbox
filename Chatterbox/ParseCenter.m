@@ -8,7 +8,9 @@
 
 #import "ParseCenter.h"
 #import <Parse/Parse.h>
-#import "Conversation.h"
+#import "CBConversation.h"
+
+#define kParseBaseURL @"https://api.parse.com";
 
 @implementation ParseCenter
 

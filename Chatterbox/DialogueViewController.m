@@ -8,7 +8,7 @@
 
 #import "DialogueViewController.h"
 #import <Parse/Parse.h>
-#import "Conversation.h"
+#import "CBConversation.h"
 #import "ChatterboxDataStore.h"
 //#import "HPGrowingTextView.h"
 
@@ -19,7 +19,7 @@
 @property (weak, nonatomic) UIView *containerView;
 //@property (weak, nonatomic) HPGrowingTextView *growingTextView;
 
-@property (strong) Conversation *conversation;
+@property (strong) CBConversation *conversation;
 @property (strong) NSArray *messages;
 
 -(void)sendMessage;
@@ -28,7 +28,7 @@
 
 @implementation DialogueViewController
 
--(id)initWithConversation:(Conversation*)conversation
+-(id)initWithConversation:(CBConversation*)conversation
 {
     self = [super init];
     if (self)

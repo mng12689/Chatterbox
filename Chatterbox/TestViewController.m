@@ -8,11 +8,11 @@
 
 #import "TestViewController.h"
 #import <Parse/Parse.h>
-#import "Conversation.h"
+#import "CBConversation.h"
 #import "ChatterboxDataStore.h"
 #import "HPGrowingTextView.h"
 #import <QuartzCore/QuartzCore.h>
-#import "Message.h"
+#import "CBMessage.h"
 #import "MessageCell.h"
 #import "AppDelegate.h"
 #import "CBCommons.h"
@@ -33,14 +33,14 @@
 @property (strong, nonatomic) UIButton *sendButton;
 @property (strong, nonatomic) HPGrowingTextView *growingTextView;
 
-@property (strong, nonatomic) Conversation *conversation;
+@property (strong, nonatomic) CBConversation *conversation;
 @property (strong) NSMutableArray *messages;
 
 @end
 
 @implementation TestViewController
 
--(id)initWithConversation:(Conversation*)conversation
+-(id)initWithConversation:(CBConversation*)conversation
 {
     self = [super init];
     if (self)
@@ -187,12 +187,12 @@
     if ([self.conversation.status isEqualToString:@"active"]) {
         NSString *message = self.growingTextView.text;
         
-        PFObject *PFMessage = [PFObject objectWithClassName:@"Message"];
+        PFObject *PFMessage = [PFObject objectWithClassName:ParseMessageClassKey];
         [PFMessage setValue:message forKey:@"text"];
         [PFMessage setValue:[PFUser currentUser] forKey:@"sender"];
-        [PFMessage setValue:[PFObject objectWithoutDataWithClassName:@"Conversation" objectId:self.conversation.parseObjectID]forKey:@"conversation"];
+        [PFMessage setValue:[PFObject objectWithoutDataWithClassName:ParseConversationClassKey objectId:self.conversation.parseObjectID]forKey:@"conversation"];
 
-        __block Message *newMessage = [ChatterboxDataStore createMessageFromParseObject:PFMessage andConversation:self.conversation error:nil];
+        __block CBMessage *newMessage = [ChatterboxDataStore createMessageFromParseObject:PFMessage andConversation:self.conversation error:nil];
         [self.messages addObject:newMessage];
         
         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:self.messages.count-1 inSection:0];
@@ -244,7 +244,7 @@
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    Message *message = [self.messages objectAtIndex:indexPath.row];
+    CBMessage *message = [self.messages objectAtIndex:indexPath.row];
     CGSize labelSize = [message.text sizeWithFont:kLabelFont constrainedToSize:CGSizeMake((kCellWidth/2+20)-2*kSpeechBubbleLeftPadding, CGFLOAT_MAX)];
     float speechBubbleHeight = labelSize.height+2*kSpeechBubbleTopPadding;
     return speechBubbleHeight + 2*kSpeechBubbleMargin;

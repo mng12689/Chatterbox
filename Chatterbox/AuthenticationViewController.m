@@ -9,14 +9,16 @@
 #import "AuthenticationViewController.h"
 #import <Parse/Parse.h>
 #import "ChatterboxDataStore.h"
+#import "EditableCell.h"
+#import "BlocksKit.h"
 
 @interface AuthenticationViewController () <UITableViewDataSource,UITableViewDelegate>
 
 @property (strong, nonatomic) UITableView *tableView;
 @property (strong, nonatomic) UIButton *doneButton;
 @property (strong, nonatomic) UILabel *titleLabel;
-@property (strong, nonatomic) UITextField *usernameTextField;
-@property (strong, nonatomic) UITextField *passwordTextField;
+@property (strong, nonatomic) NSString *username;
+@property (strong, nonatomic) NSString *password;
 @property BOOL login;
 
 - (IBAction)doneButton:(id)sender;
@@ -34,20 +36,23 @@
     return self;
 }
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
-    }
-    return self;
-}
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     self.tableView = [[UITableView alloc]initWithFrame:self.view.frame style:UITableViewStyleGrouped];
+    self.tableView.backgroundView = nil;
     self.tableView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_paper_bg"]];
+    self.tableView.delegate = self;
+    self.tableView.dataSource = self;
+    
+    self.titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, 0, 50)];
+    self.titleLabel.backgroundColor = [UIColor clearColor];
+    self.titleLabel.font = [UIFont fontWithName:@"Cochin" size:24.0];
+    self.titleLabel.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
+    self.titleLabel.shadowOffset = CGSizeMake(0, 1);
+    self.titleLabel.textAlignment = UITextAlignmentCenter;
+    self.titleLabel.textColor = [UIColor lightGrayColor];
+    self.titleLabel.textAlignment = NSTextAlignmentCenter;
     
     if (self.login) {
         self.doneButton.titleLabel.text = @"Login";
@@ -57,7 +62,9 @@
         self.doneButton.titleLabel.text = @"Sign Up";
         self.titleLabel.text = @"Sign Up";
     }
-    self.passwordTextField.secureTextEntry = YES;
+    
+    self.tableView.tableHeaderView = self.titleLabel;
+    [self.view addSubview:self.tableView];
 }
 
 - (void)didReceiveMemoryWarning
@@ -69,21 +76,18 @@
 - (void)viewDidUnload {
     [self setTitleLabel:nil];
     [self setDoneButton:nil];
-    [self setUsernameTextField:nil];
-    [self setPasswordTextField:nil];
     [super viewDidUnload];
 }
-- (IBAction)doneButton:(id)sender
+- (void)authenticate:(id)sender
 {
+    [self.tableView endEditing:YES];
     if (self.login) {
-        [PFUser logInWithUsernameInBackground:self.usernameTextField.text password:self.passwordTextField.text block:^(PFUser *user, NSError *error){
-            if (user)
-            {
+        [PFUser logInWithUsernameInBackground:self.username password:self.password block:^(PFUser *user, NSError *error){
+            if (user){
                 [self loadCoreDataObjectsForUser:[PFUser currentUser]];
                 [self dismissModalViewControllerAnimated:YES];
             }
-            else
-            {
+            else{
                 NSString *errorString = [[error userInfo]objectForKey:@"error"];
                 UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Error" message:errorString delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
                 [alert show];
@@ -92,8 +96,8 @@
     }
     else{
         PFUser *user = [PFUser user];
-        user.username = self.usernameTextField.text;
-        user.password = self.passwordTextField.text;
+        user.username = self.username;
+        user.password = self.password;
         [user signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
             if (!error) {
                 [self dismissModalViewControllerAnimated:YES];
@@ -114,12 +118,6 @@
      [query includeKey:@"conversations"];
      [query includeKey:@"]
      }*/
-}
-
--(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    [self.usernameTextField resignFirstResponder];
-    [self.passwordTextField resignFirstResponder];
 }
 
 #pragma mark - UITableView data source methods
@@ -147,24 +145,50 @@
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *usernameCellIdentifier = @"usernameCell";
-    static NSString *passwordCellIdentifier = @"passwordCell";
+    static NSString *editableCellIdentifier = @"editableCell";
     static NSString *doneButtonCellIdentifier = @"doneButtonCell";
     
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:usernameCellIdentifier];
+    UITableViewCell *cell = nil;
     
     if (indexPath.section == 0) {
-        UITextField *textField = [[UITextField alloc]initWithFrame:cell.frame];
-        if (indexPath.row == 0) {
-            textField.placeholder = @"Username";
-        }else if (indexPath.row == 1){
-            textField.placeholder = @"Password";
+        EditableCell *eCell = [tableView dequeueReusableCellWithIdentifier:editableCellIdentifier];
+        if (!cell) {
+            eCell = [[EditableCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:editableCellIdentifier];
         }
+        if (indexPath.row == 0) {
+            eCell.textField.placeholder = @"Username";
+            eCell.textField.secureTextEntry = NO;
+            [eCell.textField removeAllBlockObservers];
+            [eCell.textField addObserverForKeyPath:@"text" options:NSKeyValueObservingOptionNew task:^(id obj, NSDictionary *change) {
+                self.username = [change valueForKey:NSKeyValueChangeNewKey];
+            }];
+        }else if (indexPath.row == 1){
+            eCell.textField.placeholder = @"Password";
+            eCell.textField.secureTextEntry = YES;
+            [eCell.textField removeAllBlockObservers];
+            [eCell.textField addObserverForKeyPath:@"text" options:NSKeyValueObservingOptionNew task:^(id obj, NSDictionary *change) {
+                self.password = [change valueForKey:NSKeyValueChangeNewKey];
+            }];
+        }
+        cell = eCell;
     }else if (indexPath.section == 1){
+        cell = [tableView dequeueReusableCellWithIdentifier:doneButtonCellIdentifier];
+        if (!cell) {
+            cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:doneButtonCellIdentifier];
+        }
         UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        button.frame = CGRectMake(0, 0, cell.contentView.frame.size.width, cell.contentView.frame.size.height);
+        button.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
         [button setTitle:@"Done" forState:UIControlStateNormal];
+        [button addTarget:self action:@selector(authenticate:) forControlEvents:UIControlEventTouchUpInside];
+        [cell.contentView addSubview:button];
     }
     return cell;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 44;
 }
 
 @end

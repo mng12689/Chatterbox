@@ -8,6 +8,7 @@
 
 #import "TopicsHeaderView.h"
 #import <QuartzCore/QuartzCore.h>
+#import "CBCommons.h"
 
 #define kLeftMarginPadding 20
 
@@ -17,7 +18,7 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor orangeColor];
+        self.backgroundColor = [CBCommons chatterboxOrange];
         UILabel *label = [UILabel new];
         label.frame = CGRectMake(kLeftMarginPadding, 0, self.frame.size.width, self.frame.size.height);
         label.font = [UIFont fontWithName:@"Cochin" size:18];

@@ -19,7 +19,8 @@ extern NSString* const CBAPNSenderIDKey;
 extern NSString* const CBAPNAlertKey;
 extern NSString* const CBAPNBadgeKey;
 
-extern NSString* const CBNotificationTypeAPNReceived;
+extern NSString* const CBNotificationTypeAPNActiveConvo;
+extern NSString* const CBNotificationTypeAPNNewMessage;
 extern NSString* const CBNotificationTypeNewMessage;
 extern NSString* const CBNotificationTypeNewConversation;
 
@@ -33,6 +34,10 @@ extern NSString* const ParseConversationUser1Key;
 extern NSString* const ParseConversationUser2Key;
 extern NSString* const ParseConversationMessagesKey;
 
+extern NSString* const ParseMessageClassKey;
+
 @interface CBCommons : NSObject
+
++ (UIColor*)chatterboxOrange;
 
 @end

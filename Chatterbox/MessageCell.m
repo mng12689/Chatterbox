@@ -7,7 +7,7 @@
 //
 
 #import "MessageCell.h"
-#import "Message.h"
+#import "CBMessage.h"
 #import <Parse/Parse.h>
 
 #define kSpeechBubbleLeftPadding 10
@@ -42,7 +42,7 @@
     // Configure the view for the selected state
 }
 
--(void)setMessage:(Message*)message
+-(void)setMessage:(CBMessage*)message
 {
     CGSize labelSize = [message.text sizeWithFont:kLabelFont constrainedToSize:CGSizeMake((self.frame.size.width/2+20)-2*kSpeechBubbleLeftPadding, CGFLOAT_MAX)];
     self.messageLabel.frame = CGRectMake(kSpeechBubbleLeftPadding, kSpeechBubbleTopPadding, labelSize.width, labelSize.height);

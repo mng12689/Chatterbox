@@ -1,9 +1,31 @@
+
 PODS:
-  - DCIntrospect (0.0.2)
-  - GrowingTextView (1.0)
-  - MBProgressHUD (0.5)
+- BlocksKit (1.8.1):
+  - libffi
+- DCIntrospect (0.0.2)
+- GrowingTextView (1.0)
+- MBProgressHUD (0.5)
+- libffi (3.0.11)
 
 DEPENDENCIES:
-  - DCIntrospect (from `https://raw.github.com/CocoaPods/Specs/master/DCIntrospect/0.0.2/DCIntrospect.podspec')
-  - GrowingTextView (from `CustomPodspecs/GrowingTextView.podspec')
-  - MBProgressHUD (from `https://raw.github.com/CocoaPods/Specs/master/MBProgressHUD/0.5/MBProgressHUD.podspec')
+- BlocksKit
+- DCIntrospect (from `https://raw.github.com/CocoaPods/Specs/master/DCIntrospect/0.0.2/DCIntrospect.podspec')
+- GrowingTextView (from `CustomPodspecs/GrowingTextView.podspec')
+- MBProgressHUD (from `https://raw.github.com/CocoaPods/Specs/master/MBProgressHUD/0.5/MBProgressHUD.podspec')
+
+EXTERNAL SOURCES:
+  DCIntrospect:
+    :podspec: https://raw.github.com/CocoaPods/Specs/master/DCIntrospect/0.0.2/DCIntrospect.podspec
+  GrowingTextView:
+    :podspec: CustomPodspecs/GrowingTextView.podspec
+  MBProgressHUD:
+    :podspec: https://raw.github.com/CocoaPods/Specs/master/MBProgressHUD/0.5/MBProgressHUD.podspec
+
+SPEC CHECKSUMS:
+  BlocksKit: 18102744fd7c44b54f1e54ce6ffe9258bcb5df81
+  DCIntrospect: 2f5cab0b58b170459ebcb200f59042306fcb0c0d
+  GrowingTextView: cfd93e0c7e33fb74ecac53218aa09cd60dcffd3f
+  MBProgressHUD: b23ee11c42253d6d804e8e0bfabdc334e8b2571f
+  libffi: 8a1d9ba43c0c84b546b42c6f742714e73aa07ae1
+
+COCOAPODS: 0.16.2

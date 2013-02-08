@@ -7,8 +7,8 @@
 //
 
 #import "ChatterboxDataStore.h"
-#import "Conversation.h"
-#import "Message.h"
+#import "CBConversation.h"
+#import "CBMessage.h"
 #import <Parse/Parse.h>
 
 NSManagedObjectContext *_context;
@@ -49,9 +49,9 @@ NSPersistentStoreCoordinator *_psc;
     return results;
 }*/
 
-+ (Conversation*)createConversationFromParseObject:(PFObject*)object error:(NSError*)error
++ (CBConversation*)createConversationFromParseObject:(PFObject*)object error:(NSError*)error
 {
-    Conversation *conversation = [NSEntityDescription insertNewObjectForEntityForName:@"Conversation" inManagedObjectContext:[self context]];
+    CBConversation *conversation = [NSEntityDescription insertNewObjectForEntityForName:@"CBConversation" inManagedObjectContext:[self context]];
     conversation.parseObjectID = object.objectId;
     conversation.createdAt = object.createdAt;
     conversation.updatedAt = object.updatedAt;
@@ -59,7 +59,7 @@ NSPersistentStoreCoordinator *_psc;
     conversation.topic = [object valueForKey:@"topic"];
     conversation.user1ID = [[object valueForKey:@"user1"]objectId];
     conversation.user2ID = [[object valueForKey:@"user2"]objectId];
-    conversation.messages = [object valueForKey:@"messages"];
+    //conversation.messages = [object valueForKey:@"messages"];
     
     [ChatterboxDataStore saveContext:&error];
     
@@ -68,18 +68,18 @@ NSPersistentStoreCoordinator *_psc;
 
 + (void)updateConversationWithParseObject:(PFObject*)object error:(NSError*)error
 {
-    Conversation *conversation = [ChatterboxDataStore conversationWithParseID:object.objectId];
+    CBConversation *conversation = [ChatterboxDataStore conversationWithParseID:object.objectId];
     conversation.updatedAt = object.updatedAt;
     conversation.status = [object valueForKey:@"status"];
-    conversation.messages = [object valueForKey:@"messages"];
+    //conversation.messages = [object valueForKey:@"messages"];
     conversation.user2ID = [object valueForKey:@"user2.id"];
     
     [ChatterboxDataStore saveContext:&error];
 }
 
-+ (Message*)createMessageFromParseObject:(PFObject *)object andConversation:(Conversation*)conversation error:(NSError*)error
++ (CBMessage*)createMessageFromParseObject:(PFObject *)object andConversation:(CBConversation*)conversation error:(NSError*)error
 {
-    Message *message = [NSEntityDescription insertNewObjectForEntityForName:@"Message" inManagedObjectContext:[self context]];
+    CBMessage *message = [NSEntityDescription insertNewObjectForEntityForName:@"CBMessage" inManagedObjectContext:[self context]];
     message.parseObjectID = object.objectId;
     message.createdAt = object.createdAt;
     message.updatedAt = object.updatedAt;
@@ -95,30 +95,30 @@ NSPersistentStoreCoordinator *_psc;
 + (NSArray*) allConversations
 {
     NSFetchRequest *fetchRequest = [NSFetchRequest new];
-    fetchRequest.entity = [[ChatterboxDataStore model].entitiesByName objectForKey:@"Conversation"];
+    fetchRequest.entity = [[ChatterboxDataStore model].entitiesByName objectForKey:@"CBConversation"];
     NSError *error;
     return [[self context] executeFetchRequest:fetchRequest error:&error];
 }
 
-+ (Conversation*)conversationWithParseID:(NSString*)parseID;
++ (CBConversation*)conversationWithParseID:(NSString*)parseID;
 {
     NSFetchRequest *fetchRequest = [NSFetchRequest new];
-    fetchRequest.entity = [[ChatterboxDataStore model].entitiesByName objectForKey:@"Conversation"];
+    fetchRequest.entity = [[ChatterboxDataStore model].entitiesByName objectForKey:@"CBConversation"];
     fetchRequest.predicate = [NSPredicate predicateWithFormat:@"parseObjectID like %@",parseID];
     NSError *error;
     return [[[self context] executeFetchRequest:fetchRequest error:&error]lastObject];
 }
 
-+ (Message*)messageWithParseID:(NSString*)parseID;
++ (CBMessage*)messageWithParseID:(NSString*)parseID;
 {
     NSFetchRequest *fetchRequest = [NSFetchRequest new];
-    fetchRequest.entity = [[ChatterboxDataStore model].entitiesByName objectForKey:@"Message"];
+    fetchRequest.entity = [[ChatterboxDataStore model].entitiesByName objectForKey:@"CBMessage"];
     fetchRequest.predicate = [NSPredicate predicateWithFormat:@"parseObjectID like %@",parseID];
     NSError *error;
     return [[[self context] executeFetchRequest:fetchRequest error:&error]lastObject];
 }
 
-+ (void)updateMessage:(Message*)message withParseObjectDataAfterSave:(PFObject*)parseObject error:(NSError*)error
++ (void)updateMessage:(CBMessage*)message withParseObjectDataAfterSave:(PFObject*)parseObject error:(NSError*)error
 {
     message.createdAt = parseObject.createdAt;
     message.updatedAt = parseObject.updatedAt;

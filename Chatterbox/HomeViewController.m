@@ -10,8 +10,8 @@
 #import <QuartzCore/QuartzCore.h>
 #import "MBProgressHUD.h"
 #import <Parse/Parse.h>
-#import "SignUpOrLoginViewController.h"
-#import "Conversation.h"
+#import "AuthenticationViewController.h"
+#import "CBConversation.h"
 #import "ChatterboxDataStore.h"
 #import "CBCommons.h"
 
@@ -51,7 +51,17 @@
     scrollView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_paper_bg"]];
     self.view = scrollView;
     
-    NSArray *topics = @[@"News",@"Sports",@"Politics",@"Finance",@"Celebrities",@"Fitness/\nHealth",@"Fashion",@"Entertainment",@"Movies",@"Travel",@"Random"];
+    NSArray *topics = @[@{@"News":@"news_icon"},
+    @{@"Sports":@"sports_icon"},
+    @{@"Politics":@"politics_icon"},
+    @{@"Finance":@"finance_icon"},
+    @{@"Celebrities":@"celebrities_icon"},
+    @{@"Fitness/\nHealth":@"fitness_icon"},
+    @{@"Fashion":@"fashion_icon"},
+    @{@"Entertainment":@"entertainment_icon"},
+    @{@"Movies":@"movies_icon"},
+    @{@"Travel":@"travel_icon"},
+    @{@"Random":@"random_icon"}];
     
     // layout topics
     int padding = 20;
@@ -59,22 +69,28 @@
     
     int row = 0;
     int column = 0;
-    for (NSString *topic in topics)
+    for (NSDictionary *topic in topics)
     {
         UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
         button.frame = CGRectMake(padding + column*(padding+squareButtonDimensions), padding + row*(padding+squareButtonDimensions), squareButtonDimensions, squareButtonDimensions);
-        [button setTitle:topic forState:UIControlStateNormal];
+        [button setTitle:[[topic allKeys]lastObject] forState:UIControlStateNormal];
         [button setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
-        [button setTitleColor:[UIColor orangeColor] forState:UIControlStateHighlighted];
+        [button setTitleColor:[CBCommons chatterboxOrange] forState:UIControlStateHighlighted];
         [button setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
         button.titleLabel.font = [UIFont fontWithName:@"Cochin" size:22.0];
         [button.titleLabel setShadowOffset:CGSizeMake(0, 1)];
         button.titleLabel.numberOfLines = 0;
         button.titleLabel.adjustsFontSizeToFitWidth = YES;
         button.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
-        [button setTitleEdgeInsets:UIEdgeInsetsMake(-30, 0, 0, 0)];
+        
         [button setBackgroundImage:[UIImage imageNamed:@"category_glass_button"] forState:UIControlStateNormal];
         [button setShowsTouchWhenHighlighted:YES];
+        
+        UIImage *icon = [UIImage imageNamed:[topic valueForKey:[[topic allKeys]lastObject]]];
+        [button setTitleEdgeInsets:UIEdgeInsetsMake(-40, -icon.size.width, 0, 0)];
+        [button setImageEdgeInsets:UIEdgeInsetsMake(40, 0, 0, -button.titleLabel.bounds.size.width)];
+        [button setImage:icon forState:UIControlStateNormal];
+        
         button.layer.backgroundColor = [[UIColor clearColor] CGColor];
         button.layer.cornerRadius = 10.0f;
         button.layer.masksToBounds = YES;
@@ -114,7 +130,8 @@
             NSLog(@"Stuff");
         }];*/
     //}];
-
+    NSSet *conversations = [[PFUser currentUser] objectForKey:@"conversations"] quer;
+    NSLog(@"here");
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
     hud.labelText = [NSString stringWithFormat:@"Finding match..."];
     
@@ -133,6 +150,7 @@
             if (conversation){
                 [conversation setValue:@"active" forKey:@"status"];
                 [conversation setValue:[PFUser currentUser] forKey:@"user2"];
+                //[[[PFUser currentUser] objectForKey:@"conversations"]addObject:]
                 
                 alertTitle = @"Conversation Started"; 
                 alertMessage = [NSString stringWithFormat:@"You have entered into a conversation on the subject of %@", sender.titleLabel.text];
@@ -186,8 +204,8 @@
         if (buttonIndex == 0) {
             login = false;
         }
-        SignUpOrLoginViewController *x = [[SignUpOrLoginViewController alloc]initForLogin:login];
-        [self presentModalViewController:x animated:YES];
+        AuthenticationViewController *authVC = [[AuthenticationViewController alloc]initForLogin:login];
+        [self presentModalViewController:authVC animated:YES];
     }
 }
 

@@ -7,11 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-@class Conversation;
+@class CBConversation;
 @class PFObject;
 
 @interface ParseCenter : NSObject
 
-- (PFObject*)parseObjectFromConversation:(Conversation*)conversation;
+- (PFObject*)parseObjectFromConversation:(CBConversation*)conversation;
 
 @end

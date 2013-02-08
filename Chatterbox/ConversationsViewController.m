@@ -9,9 +9,9 @@
 #import "ConversationsViewController.h"
 #import <Parse/Parse.h>
 #import "DialogueViewController.h"
-#import "Conversation.h"
+#import "CBConversation.h"
 #import "ChatterboxDataStore.h"
-#import "Message.h"
+#import "CBMessage.h"
 #import "TestViewController.h"
 #import "LastMessageCell.h"
 #import <QuartzCore/QuartzCore.h>
@@ -44,7 +44,15 @@
                 [self.table reloadRowsAtIndexPaths:@[[self indexPathForConversation:[[note userInfo]objectForKey:@"conversation"]]] withRowAnimation:UITableViewRowAnimationNone];
             }
         }];
-        [[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeAPNReceived object:nil queue:nil usingBlock:^(NSNotification *note) {
+        [[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeAPNActiveConvo object:nil queue:nil usingBlock:^(NSNotification *note) {
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:NSLocalizedString(@"Conversation Started", @"alert title") message:@"Conversation has become active" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alert show];
+            [self loadUserConversations];
+            [self.table reloadData];
+        }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeAPNNewMessage object:nil queue:nil usingBlock:^(NSNotification *note) {
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:NSLocalizedString(@"New Message", @"alert title") message:@"new message" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alert show];
             [self loadUserConversations];
             [self.table reloadData];
         }];
@@ -123,7 +131,7 @@
     }
 }
 
--(NSIndexPath*)indexPathForConversation:(Conversation*)conversation
+-(NSIndexPath*)indexPathForConversation:(CBConversation*)conversation
 {
     int row = [[self.conversationsByTopic objectForKey:conversation.topic]indexOfObject:conversation];
     int section = [[[self.conversationsByTopic allKeys]sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)]indexOfObject:conversation.topic];
@@ -141,7 +149,7 @@
     }
     
     NSString *topic = [self.topics objectAtIndex:indexPath.section];
-    Conversation *conversation = [[self.conversationsByTopic valueForKey:topic] objectAtIndex:indexPath.row];
+    CBConversation *conversation = [[self.conversationsByTopic valueForKey:topic] objectAtIndex:indexPath.row];
     
     cell.statusLabel.text = [conversation.status isEqualToString:@"pending"] ? @"Pending" : @"Active";
     cell.statusLabel.layer.shadowColor = [conversation.status isEqualToString:@"pending"] ? [[UIColor clearColor]CGColor] : [[UIColor greenColor]CGColor];
@@ -181,7 +189,7 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {    
     NSString *topic = [self.topics objectAtIndex:indexPath.section];
-    Conversation *conversation = [[self.conversationsByTopic valueForKey:topic] objectAtIndex:indexPath.row];
+    CBConversation *conversation = [[self.conversationsByTopic valueForKey:topic] objectAtIndex:indexPath.row];
     
     TestViewController *dialogueViewController = [[TestViewController alloc]initWithConversation:conversation];
     [self.navigationController pushViewController:dialogueViewController animated:YES];

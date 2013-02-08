@@ -8,8 +8,8 @@
 
 #import <Foundation/Foundation.h>
 @class PFObject;
-@class Conversation;
-@class Message;
+@class CBConversation;
+@class CBMessage;
 
 @interface ChatterboxDataStore : NSObject
 
@@ -24,13 +24,13 @@
 + (NSArray*)allTopics;
 + (NSArray*)allConversations;
 
-+ (Conversation*)conversationWithParseID:(NSString*)parseID;
-+ (Message*)messageWithParseID:(NSString*)parseID;
++ (CBConversation*)conversationWithParseID:(NSString*)parseID;
++ (CBMessage*)messageWithParseID:(NSString*)parseID;
 
-+ (Conversation*)createConversationFromParseObject:(PFObject*)object error:(NSError*)error;
-+ (Message*)createMessageFromParseObject:(PFObject*)object andConversation:(Conversation*)conversation error:(NSError*)error;
++ (CBConversation*)createConversationFromParseObject:(PFObject*)object error:(NSError*)error;
++ (CBMessage*)createMessageFromParseObject:(PFObject*)object andConversation:(CBConversation*)conversation error:(NSError*)error;
 
-+ (void)updateMessage:(Message*)message withParseObjectDataAfterSave:(PFObject*)parseObject error:(NSError*)error;
++ (void)updateMessage:(CBMessage*)message withParseObjectDataAfterSave:(PFObject*)parseObject error:(NSError*)error;
 + (void)updateConversationWithParseObject:(PFObject*)object error:(NSError*)error;
 
 //+ (id) createNewAttribute:(NSString*)attributeType;

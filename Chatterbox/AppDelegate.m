@@ -12,7 +12,7 @@
 #import <Parse/Parse.h>
 #import "DCIntrospect.h"
 #import "ChatterboxDataStore.h"
-#import "Conversation.h"
+#import "CBConversation.h"
 #import "CBCommons.h"
 
 @implementation AppDelegate
@@ -104,33 +104,35 @@
         
         CBAPNType notificationType = (CBAPNType)[userInfo objectForKey:CBAPNTypeKey];
         NSString *convoID = [userInfo objectForKey:CBAPNConvoIDKey];
-        __block Conversation *conversation;
+        __block CBConversation *conversation;
         
         switch (notificationType) {
             case CBAPNTypeConversationStarted:{
-                PFQuery *query = [PFQuery queryWithClassName:@"Conversation"];
+                PFQuery *query = [PFQuery queryWithClassName:ParseConversationClassKey];
                 [query getObjectInBackgroundWithId:convoID block:^(PFObject *object, NSError *error) {
                     [ChatterboxDataStore updateConversationWithParseObject:object error:nil];
+                    UITabBarController *tabBarController = (UITabBarController*)self.window.rootViewController;
+                    tabBarController.selectedIndex = 1;
+                    [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeAPNActiveConvo object:self];
                 }];
                 break;
             }
             case CBAPNTypeNewMessage:{
                 conversation = [ChatterboxDataStore conversationWithParseID:convoID];
-                PFQuery *query = [PFQuery queryWithClassName:@"Message"];
+                PFQuery *query = [PFQuery queryWithClassName:ParseMessageClassKey];
                 [query whereKey:@"conversation.id" equalTo:convoID];
                 [query whereKey:@"createdAt" greaterThan:conversation.createdAt];
                 [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                     for (PFObject *object in objects) {
                         [ChatterboxDataStore createMessageFromParseObject:object andConversation:conversation error:nil];
                     }
-                    [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeNewMessage object:self userInfo:[NSDictionary dictionaryWithObject:conversation forKey:@"conversation"]];
+                    [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeAPNNewMessage object:self userInfo:[NSDictionary dictionaryWithObject:conversation forKey:@"conversation"]];
                 }];
                 break;
             }
             default:
                 break;
         }
-        [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeAPNReceived object:self userInfo:userInfo];
     }
 }
 
