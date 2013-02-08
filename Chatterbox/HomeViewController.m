@@ -13,6 +13,7 @@
 #import "SignUpOrLoginViewController.h"
 #import "Conversation.h"
 #import "ChatterboxDataStore.h"
+#import "CBCommons.h"
 
 @interface HomeViewController () <UIAlertViewDelegate>
 
@@ -26,7 +27,18 @@
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        self.title = @"Categories";
+        self.title = NSLocalizedString(@"Chattegories",@"title for view controller");
+        
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
+        label.backgroundColor = [UIColor clearColor];
+        label.font = [UIFont fontWithName:@"Cochin" size:24.0];
+        label.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
+        label.shadowOffset = CGSizeMake(0, 1);
+        label.textAlignment = UITextAlignmentCenter;
+        label.textColor = [UIColor lightGrayColor]; // change this color
+        self.navigationItem.titleView = label;
+        label.text = NSLocalizedString(self.title, @"title for nav bar");
+        [label sizeToFit];
     }
     return self;
 }
@@ -39,7 +51,7 @@
     scrollView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_paper_bg"]];
     self.view = scrollView;
     
-    NSArray *topics = @[@"News",@"Sports",@"Politics",@"Finance",@"Random"];
+    NSArray *topics = @[@"News",@"Sports",@"Politics",@"Finance",@"Celebrities",@"Fitness/\nHealth",@"Fashion",@"Entertainment",@"Movies",@"Travel",@"Random"];
     
     // layout topics
     int padding = 20;
@@ -57,6 +69,10 @@
         [button setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
         button.titleLabel.font = [UIFont fontWithName:@"Cochin" size:22.0];
         [button.titleLabel setShadowOffset:CGSizeMake(0, 1)];
+        button.titleLabel.numberOfLines = 0;
+        button.titleLabel.adjustsFontSizeToFitWidth = YES;
+        button.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        [button setTitleEdgeInsets:UIEdgeInsetsMake(-30, 0, 0, 0)];
         [button setBackgroundImage:[UIImage imageNamed:@"category_glass_button"] forState:UIControlStateNormal];
         [button setShowsTouchWhenHighlighted:YES];
         button.layer.backgroundColor = [[UIColor clearColor] CGColor];
@@ -93,24 +109,28 @@
 
 -(void)startConversation:(UIButton *)sender
 {
+    /*[PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"Thechannel"]block:^(BOOL succeeded, NSError *error) {
+        /*[PFPush sendPushDataToChannelInBackground:[NSString stringWithFormat:@"Thechannel"] withData:[NSDictionary dictionary]block:^(BOOL succeeded, NSError *error) {
+            NSLog(@"Stuff");
+        }];*/
+    //}];
+
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
     hud.labelText = [NSString stringWithFormat:@"Finding match..."];
     
     PFQuery *query = [PFQuery queryWithClassName:@"Conversation"];
     [query whereKey:@"status" equalTo:@"pending"];
     [query whereKey:@"topic" equalTo:sender.titleLabel.text];
+    [query whereKey:@"user1" notEqualTo:[PFUser currentUser]];
     [query orderByAscending:@"createdAt"];
-    [query setLimit:1];
     
-    [query getFirstObjectInBackgroundWithBlock:^(PFObject *conversation, NSError *error)
-     {
-        if (!error || [[[error userInfo] valueForKey:@"code"] intValue] == 101)
-        {
+    [query getFirstObjectInBackgroundWithBlock:^(PFObject *conversation, NSError *error){
+        BOOL isNoResultsError = [[[error userInfo] valueForKey:@"code"] intValue] == 101;
+        if (!error || isNoResultsError){
             NSString *alertTitle;
             NSString *alertMessage;
             // join conversation
-            if (conversation)
-            {
+            if (conversation){
                 [conversation setValue:@"active" forKey:@"status"];
                 [conversation setValue:[PFUser currentUser] forKey:@"user2"];
                 
@@ -118,8 +138,7 @@
                 alertMessage = [NSString stringWithFormat:@"You have entered into a conversation on the subject of %@", sender.titleLabel.text];
             }
             //create conversation
-            else
-            {
+            else{
                 conversation = [PFObject objectWithClassName:@"Conversation"];
                 [conversation setValue:sender.titleLabel.text forKey:@"topic"];
                 [conversation setValue:[PFUser currentUser] forKey:@"user1"];
@@ -129,38 +148,30 @@
                 alertMessage = [NSString stringWithFormat:@"There is no immediate match for you on the subject of %@. We will notify you once a suitable match has been found.",sender.titleLabel.text];
             }
             
-            [conversation saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error)
-             {
-                 if (succeeded)
-                 {
+            [conversation saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error){
+                 if (succeeded){
                      PFUser *user = [PFUser currentUser];
                      PFRelation *relation = [user relationforKey:@"conversations"];
                      [relation addObject:conversation];
-                     
-                     [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error)
-                     {
-                         if (succeeded)
-                         {
-                             [ChatterboxDataStore createConversationFromParseObject:conversation];
-                             NSError *error = nil;
-                             [ChatterboxDataStore saveContext:&error];
-                             if (!error) {
-                                 [[NSNotificationCenter defaultCenter]postNotificationName:@"NewConvo" object:self];
-                                 [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"Convo%@",conversation.objectId]];
-                                 
-                                 UIAlertView *alert = [[UIAlertView alloc]initWithTitle:alertTitle message:alertMessage delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-                                 [alert show];
-                                 
-                                 self.tabBarController.selectedIndex = 1;
-
-                             }
+                     [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error){
+                         if (succeeded){
+                             [ChatterboxDataStore createConversationFromParseObject:conversation error:nil];
+                             [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeNewConversation object:self];
+                             [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"Convo%@",conversation.objectId]block:^(BOOL succeeded, NSError *error) {
+                                 if (succeeded && [[conversation valueForKey:@"status"] isEqualToString:@"active"]) {
+                                     NSDictionary *dataDictionary = [NSDictionary dictionaryWithObjects:@[@0,conversation.objectId,[PFUser currentUser].objectId,@"Increment"]
+                                                                                                forKeys:@[CBAPNTypeKey,CBAPNConvoIDKey,CBAPNSenderIDKey,CBAPNBadgeKey]];
+                                     [PFPush sendPushDataToChannelInBackground:[NSString stringWithFormat:@"Convo%@",conversation.objectId] withData:dataDictionary];
+                                 }
+                             }];
+                             UIAlertView *alert = [[UIAlertView alloc]initWithTitle:alertTitle message:alertMessage delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                             [alert show];
+                             self.tabBarController.selectedIndex = 1;
                          }
                      }];
                  }
              }];
-        }
-        else
-        {
+        }else{
             NSLog(@"Error: %@", [[error userInfo] valueForKey:@"code"]);
             NSLog(@"FUCKKKKK");
         }

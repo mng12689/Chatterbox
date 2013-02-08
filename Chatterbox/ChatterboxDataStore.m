@@ -49,7 +49,7 @@ NSPersistentStoreCoordinator *_psc;
     return results;
 }*/
 
-+ (Conversation*)createConversationFromParseObject:(PFObject *)object
++ (Conversation*)createConversationFromParseObject:(PFObject*)object error:(NSError*)error
 {
     Conversation *conversation = [NSEntityDescription insertNewObjectForEntityForName:@"Conversation" inManagedObjectContext:[self context]];
     conversation.parseObjectID = object.objectId;
@@ -61,10 +61,23 @@ NSPersistentStoreCoordinator *_psc;
     conversation.user2ID = [[object valueForKey:@"user2"]objectId];
     conversation.messages = [object valueForKey:@"messages"];
     
+    [ChatterboxDataStore saveContext:&error];
+    
     return conversation;
 }
 
-+ (Message*)createMessageFromParseObject:(PFObject *)object andConversation:(Conversation*)conversation
++ (void)updateConversationWithParseObject:(PFObject*)object error:(NSError*)error
+{
+    Conversation *conversation = [ChatterboxDataStore conversationWithParseID:object.objectId];
+    conversation.updatedAt = object.updatedAt;
+    conversation.status = [object valueForKey:@"status"];
+    conversation.messages = [object valueForKey:@"messages"];
+    conversation.user2ID = [object valueForKey:@"user2.id"];
+    
+    [ChatterboxDataStore saveContext:&error];
+}
+
++ (Message*)createMessageFromParseObject:(PFObject *)object andConversation:(Conversation*)conversation error:(NSError*)error
 {
     Message *message = [NSEntityDescription insertNewObjectForEntityForName:@"Message" inManagedObjectContext:[self context]];
     message.parseObjectID = object.objectId;
@@ -73,6 +86,8 @@ NSPersistentStoreCoordinator *_psc;
     message.senderID = [[object valueForKey:@"sender"]objectId];
     message.text = [object valueForKey:@"text"];
     message.conversation = conversation;
+    
+    [ChatterboxDataStore saveContext:&error];
     
     return message;
 }
@@ -103,11 +118,13 @@ NSPersistentStoreCoordinator *_psc;
     return [[[self context] executeFetchRequest:fetchRequest error:&error]lastObject];
 }
 
-+ (void)updateMessage:(Message*)message withParseObjectDataAfterSave:(PFObject*)parseObject;
++ (void)updateMessage:(Message*)message withParseObjectDataAfterSave:(PFObject*)parseObject error:(NSError*)error
 {
     message.createdAt = parseObject.createdAt;
     message.updatedAt = parseObject.updatedAt;
     message.parseObjectID = parseObject.objectId;
+    
+    [ChatterboxDataStore saveContext:&error];
 }
 + (void) deleteObject:(NSManagedObject*)object
 {

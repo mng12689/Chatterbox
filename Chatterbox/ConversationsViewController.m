@@ -15,6 +15,8 @@
 #import "TestViewController.h"
 #import "LastMessageCell.h"
 #import <QuartzCore/QuartzCore.h>
+#import "CBCommons.h"
+#import "TopicsHeaderView.h"
 
 @interface ConversationsViewController () <UITableViewDataSource, UITableViewDelegate>
 
@@ -32,19 +34,21 @@
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self){
-        if ([PFUser currentUser]){
-            self.title = @"Conversations";
-            [[NSNotificationCenter defaultCenter] addObserverForName:@"NewConvo" object:nil queue:nil usingBlock:^(NSNotification *note) {
-                [self loadUserConversations];
-                [self.table reloadData];
-            }];
-            [[NSNotificationCenter defaultCenter] addObserverForName:@"NewMessages" object:nil queue:nil usingBlock:^(NSNotification *note) {
-                if ([note.object isKindOfClass:[TestViewController class]]) {
-                    [self.table reloadRowsAtIndexPaths:@[[self indexPathForConversation:[[note userInfo]objectForKey:@"conversation"]]] withRowAnimation:UITableViewRowAnimationNone];
-                }
-            }];
+        self.title = NSLocalizedString(@"Conversations",@"title for view controller");
+        [[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeNewConversation object:nil queue:nil usingBlock:^(NSNotification *note) {
             [self loadUserConversations];
-        }
+            [self.table reloadData];
+        }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeNewMessage object:nil queue:nil usingBlock:^(NSNotification *note) {
+            if ([note.object isKindOfClass:[TestViewController class]]) {
+                [self.table reloadRowsAtIndexPaths:@[[self indexPathForConversation:[[note userInfo]objectForKey:@"conversation"]]] withRowAnimation:UITableViewRowAnimationNone];
+            }
+        }];
+        [[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeAPNReceived object:nil queue:nil usingBlock:^(NSNotification *note) {
+            [self loadUserConversations];
+            [self.table reloadData];
+        }];
+        [self loadUserConversations];
     }
     return self;
 }
@@ -89,6 +93,9 @@
 
 -(void)loadUserConversations
 {
+    if (![PFUser currentUser]) {
+        return;
+    }
     NSArray *conversations = [ChatterboxDataStore allConversations];
         
     if (conversations)
@@ -103,8 +110,12 @@
         {
             predicate = [NSPredicate predicateWithFormat:@"topic like %@",topic];
             conversationsInTopic = [conversations filteredArrayUsingPredicate:predicate];
+            
             NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"updatedAt" ascending:NO];
-            [conversationsInTopic sortedArrayUsingDescriptors:@[sortDescriptor]];
+            NSArray *activeConversations = [conversationsInTopic filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"status like %@",@"active"]];
+            activeConversations = [activeConversations sortedArrayUsingDescriptors:@[sortDescriptor]];
+            NSArray *pendingConversations = [conversationsInTopic filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"status like %@",@"pending"]];
+            conversationsInTopic = [activeConversations arrayByAddingObjectsFromArray:pendingConversations];
             
             [dictionary setObject:conversationsInTopic forKey:topic];
         }
@@ -148,6 +159,13 @@
 {
     return [self.topics objectAtIndex:section];
 }
+
+/*-(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    TopicsHeaderView *headerView = [[TopicsHeaderView alloc]initWithFrame:CGRectMake(0, 0, 320, 20)];
+    headerView.label.text = [self.topics objectAtIndex:section];
+    return headerView;
+}*/
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {

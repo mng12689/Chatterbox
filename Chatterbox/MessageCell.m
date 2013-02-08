@@ -29,7 +29,7 @@
         self.messageLabel.font = kLabelFont;
         self.messageLabel.numberOfLines = 0;
         self.messageLabel.backgroundColor = [UIColor clearColor];
-        self.messageLabel.shadowColor = [UIColor whiteColor];
+        self.messageLabel.shadowColor = [UIColor colorWithWhite:1 alpha:.5];
         self.messageLabel.shadowOffset = CGSizeMake(0, 1);
     }
     return self;
@@ -54,7 +54,7 @@
                                                                             kSpeechBubbleMargin,
                                                                             self.messageLabel.frame.size.width+2*kSpeechBubbleLeftPadding,
                                                                             self.messageLabel.frame.size.height+2*kSpeechBubbleTopPadding)];
-    NSString *imageName = messageSentByUser ? @"speech_bubble_gray_with_glow" : @"speech_bubble_gray";
+    NSString *imageName = messageSentByUser ? @"speech_bubble_gray_with_glow" : @"speech_bubble_orange";
     speechBubble.image = [[UIImage imageNamed:imageName] stretchableImageWithLeftCapWidth:10 topCapHeight:12];//resizableImageWithCapInsets:UIEdgeInsetsMake(10, 10, 10, 10) resizingMode:UIImageResizingModeStretch];
     [speechBubble addSubview:self.messageLabel];
     //speechBubble.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;

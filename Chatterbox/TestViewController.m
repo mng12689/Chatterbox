@@ -14,6 +14,8 @@
 #import <QuartzCore/QuartzCore.h>
 #import "Message.h"
 #import "MessageCell.h"
+#import "AppDelegate.h"
+#import "CBCommons.h"
 
 #define kElementPadding 3
 
@@ -53,8 +55,9 @@
 													 name:UIKeyboardWillHideNotification
 												   object:nil];
         
-        [[NSNotificationCenter defaultCenter] addObserverForName:@"NewMessages" object:[[UIApplication sharedApplication]delegate] queue:nil usingBlock:^(NSNotification *note) {
+        [[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeNewMessage object:[[UIApplication sharedApplication]delegate] queue:nil usingBlock:^(NSNotification *note) {
             [self loadMessages];
+            [self.table reloadData];
         }];
         
         self.hidesBottomBarWhenPushed = YES;
@@ -95,6 +98,7 @@
     self.growingTextView.layer.borderColor = [[UIColor grayColor]CGColor];
     self.growingTextView.layer.borderWidth = 1.0;
     self.growingTextView.userInteractionEnabled = YES;
+    //self.growingTextView.internalTextView.keyboardType = UIKeyboardt
     [self.containerView addSubview:self.growingTextView];
     
     self.sendButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -187,8 +191,8 @@
         [PFMessage setValue:message forKey:@"text"];
         [PFMessage setValue:[PFUser currentUser] forKey:@"sender"];
         [PFMessage setValue:[PFObject objectWithoutDataWithClassName:@"Conversation" objectId:self.conversation.parseObjectID]forKey:@"conversation"];
-        
-        __block Message *newMessage = [ChatterboxDataStore createMessageFromParseObject:PFMessage andConversation:self.conversation];
+
+        __block Message *newMessage = [ChatterboxDataStore createMessageFromParseObject:PFMessage andConversation:self.conversation error:nil];
         [self.messages addObject:newMessage];
         
         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:self.messages.count-1 inSection:0];
@@ -199,11 +203,9 @@
         [PFMessage saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error)
          {
              if (succeeded){
-                 [ChatterboxDataStore updateMessage:newMessage withParseObjectDataAfterSave:PFMessage];
-                 NSError *error = nil;
-                 [ChatterboxDataStore saveContext:&error];
-                 [PFPush sendPushMessageToChannelInBackground:[NSString stringWithFormat:@"Convo%@",self.conversation.parseObjectID] withMessage:message];
-                 [[NSNotificationCenter defaultCenter]postNotificationName:@"NewMessages" object:self userInfo:[NSDictionary dictionaryWithObject:self.conversation forKey:@"conversation"]];
+                 [ChatterboxDataStore updateMessage:newMessage withParseObjectDataAfterSave:PFMessage error:nil];
+                 [PFPush sendPushDataToChannelInBackground:[NSString stringWithFormat:@"Convo%@",self.conversation.parseObjectID] withData:[NSDictionary dictionaryWithObjects:@[@1,self.conversation.parseObjectID,[PFUser currentUser].objectId] forKeys:@[CBAPNTypeKey,CBAPNConvoIDKey,CBAPNSenderIDKey]]];
+                 [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeNewMessage object:self userInfo:[NSDictionary dictionaryWithObject:self.conversation forKey:@"conversation"]];
                  //newMessage.sent = YES;
              }
              else{

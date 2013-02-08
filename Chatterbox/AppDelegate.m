@@ -13,11 +13,7 @@
 #import "DCIntrospect.h"
 #import "ChatterboxDataStore.h"
 #import "Conversation.h"
-
-typedef enum {
-    CBAPNTypeConversationStarted,
-    CBAPNTypeNewMessage
-}CBAPNType;
+#import "CBCommons.h"
 
 @implementation AppDelegate
 
@@ -33,7 +29,9 @@ typedef enum {
      UIRemoteNotificationTypeSound];
     
     HomeViewController *homeViewController = [HomeViewController new];
-    homeViewController.tabBarItem = [[UITabBarItem alloc]initWithTitle:@"Categories" image:[UIImage imageNamed:@"category_tab_bar_icon"] tag:589340];
+    UINavigationController *homeNavController = [[UINavigationController alloc]initWithRootViewController:homeViewController];
+    [homeNavController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
+    homeNavController.tabBarItem = [[UITabBarItem alloc]initWithTitle:@"Categories" image:[UIImage imageNamed:@"category_tab_bar_icon"] tag:589340];
 
     ConversationsViewController *conversationsViewController = [ConversationsViewController new];
     UINavigationController *navController = [[UINavigationController alloc]initWithRootViewController:conversationsViewController];
@@ -41,7 +39,7 @@ typedef enum {
     navController.tabBarItem = [[UITabBarItem alloc]initWithTitle:@"Conversations" image:[UIImage imageNamed:@"speech_bubble_icon"] tag:589340];
 
     UITabBarController *tabBarController = [UITabBarController new];
-    tabBarController.viewControllers = @[homeViewController,navController];
+    tabBarController.viewControllers = @[homeNavController,navController];
     self.window.rootViewController = tabBarController;
     
     [[UIApplication sharedApplication] setStatusBarHidden:YES];
@@ -90,43 +88,50 @@ typedef enum {
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)newDeviceToken
 {
-    // Tell Parse about the device token.
-    [PFPush storeDeviceToken:newDeviceToken];
+    // Store the deviceToken in the current Installation and save it to Parse.
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    [currentInstallation setDeviceTokenFromData:newDeviceToken];
+    [currentInstallation saveInBackground];
+    
     // Subscribe to the global broadcast channel.
     [PFPush subscribeToChannelInBackground:@""];
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
 {
-    [PFPush handlePush:userInfo];
-    
-    /*CBAPNType notificationType = [[userInfo objectForKey:@"notifType"]intValue];
-    NSString *convoID = [userInfo objectForKey:@"convoID"];
-    Conversation *conversation = [ChatterboxDataStore createConversationFromParseObject:parseConversation];
-    switch (notificationType) {
-        case CBAPNTypeConversationStarted:{
-            //grab convo from parse
-            break;
+    if (![[userInfo objectForKey:CBAPNSenderIDKey]isEqualToString:[PFUser currentUser].objectId]) {
+        [PFPush handlePush:userInfo];
+        
+        CBAPNType notificationType = (CBAPNType)[userInfo objectForKey:CBAPNTypeKey];
+        NSString *convoID = [userInfo objectForKey:CBAPNConvoIDKey];
+        __block Conversation *conversation;
+        
+        switch (notificationType) {
+            case CBAPNTypeConversationStarted:{
+                PFQuery *query = [PFQuery queryWithClassName:@"Conversation"];
+                [query getObjectInBackgroundWithId:convoID block:^(PFObject *object, NSError *error) {
+                    [ChatterboxDataStore updateConversationWithParseObject:object error:nil];
+                }];
+                break;
+            }
+            case CBAPNTypeNewMessage:{
+                conversation = [ChatterboxDataStore conversationWithParseID:convoID];
+                PFQuery *query = [PFQuery queryWithClassName:@"Message"];
+                [query whereKey:@"conversation.id" equalTo:convoID];
+                [query whereKey:@"createdAt" greaterThan:conversation.createdAt];
+                [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                    for (PFObject *object in objects) {
+                        [ChatterboxDataStore createMessageFromParseObject:object andConversation:conversation error:nil];
+                    }
+                    [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeNewMessage object:self userInfo:[NSDictionary dictionaryWithObject:conversation forKey:@"conversation"]];
+                }];
+                break;
+            }
+            default:
+                break;
         }
-        case CBAPNTypeNewMessage:{
-            
-            PFQuery *query = [PFQuery queryWithClassName:@"Message"];
-            [query whereKey:@"conversation.id" equalTo:convoID];
-            [query whereKey:@"createdAt" greaterThan:conversation.createdAt];
-            [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-                for (PFObject *object in objects) {
-                    [ChatterboxDataStore createMessageFromParseObject:object andConversation:conversation];
-                }
-                NSError *err;
-                [ChatterboxDataStore saveContext:&err];
-                [[NSNotificationCenter defaultCenter]postNotificationName:@"NewMessages" object:self userInfo:[NSDictionary dictionaryWithObject:conversation forKey:@"conversation"]];
-            }];
-            break;
-        }
-        default:
-            break;
+        [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeAPNReceived object:self userInfo:userInfo];
     }
-    [[NSNotificationCenter defaultCenter]postNotificationName:@"PushReceived" object:self userInfo:userInfo];*/
 }
 
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error
