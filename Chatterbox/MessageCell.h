@@ -11,6 +11,8 @@
 @interface MessageCell : UITableViewCell
 
 @property (strong,nonatomic) UILabel *messageLabel;
+
 -(void)setMessage:(NSString*)message;
++ (float)heightForCellWithText:(NSString*)text;
 
 @end

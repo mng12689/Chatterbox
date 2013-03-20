@@ -8,13 +8,15 @@
 
 #import "HomeViewController.h"
 #import <QuartzCore/QuartzCore.h>
-#import "MBProgressHUD.h"
+#import "SVProgressHUD.h"
 #import <Parse/Parse.h>
 #import "AuthenticationViewController.h"
-#import "CBConversation.h"
-#import "ChatterboxDataStore.h"
 #import "CBCommons.h"
+#import "ParseCenter.h"
+#import "BlocksKit.h"
 
+#define kAlertTag 89043
+#define kTopics @[@{@"News":@"news_icon"},@{@"Sports":@"sports_icon"},@{@"Politics":@"politics_icon"},@{@"Finance":@"finance_icon"},@{@"Celebrities":@"celebrities_icon"},@{@"Health":@"fitness_icon"},@{@"Fashion":@"fashion_icon"},@{@"Technology":@"technology_icon"},@{@"Music":@"music_icon"},@{@"Movies":@"movies_icon"},@{@"Travel":@"travel_icon"},@{@"Random":@"random_icon"}]
 @interface HomeViewController () <UIAlertViewDelegate>
 
 -(void)startConversation:(UIButton*)sender;
@@ -35,7 +37,7 @@
         label.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
         label.shadowOffset = CGSizeMake(0, 1);
         label.textAlignment = UITextAlignmentCenter;
-        label.textColor = [UIColor lightGrayColor]; // change this color
+        label.textColor = [UIColor lightGrayColor]; 
         self.navigationItem.titleView = label;
         label.text = NSLocalizedString(self.title, @"title for nav bar");
         [label sizeToFit];
@@ -51,17 +53,9 @@
     scrollView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_paper_bg"]];
     self.view = scrollView;
     
-    NSArray *topics = @[@{@"News":@"news_icon"},
-    @{@"Sports":@"sports_icon"},
-    @{@"Politics":@"politics_icon"},
-    @{@"Finance":@"finance_icon"},
-    @{@"Celebrities":@"celebrities_icon"},
-    @{@"Fitness/\nHealth":@"fitness_icon"},
-    @{@"Fashion":@"fashion_icon"},
-    @{@"Entertainment":@"entertainment_icon"},
-    @{@"Movies":@"movies_icon"},
-    @{@"Travel":@"travel_icon"},
-    @{@"Random":@"random_icon"}];
+    NSString *title = [PFUser currentUser] ? @"Log Out" : @"Log In";
+    UIBarButtonItem *settingsBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:title style:UIBarButtonItemStylePlain target:self action:@selector(settingsClicked:)];
+    self.navigationItem.rightBarButtonItem = settingsBarButtonItem;
     
     // layout topics
     int padding = 20;
@@ -69,7 +63,7 @@
     
     int row = 0;
     int column = 0;
-    for (NSDictionary *topic in topics)
+    for (NSDictionary *topic in kTopics)
     {
         UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
         button.frame = CGRectMake(padding + column*(padding+squareButtonDimensions), padding + row*(padding+squareButtonDimensions), squareButtonDimensions, squareButtonDimensions);
@@ -104,18 +98,21 @@
         
         scrollView.contentSize = CGSizeMake(button.frame.origin.x + button.frame.size.width, button.frame.origin.y + button.frame.size.height + padding);
     }
-    
-    // login user if not logged in
-    if (![PFUser currentUser]) {
-        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"No User Detected" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:@"Sign Up",@"Login", nil];
-        [alert show];
-    }
 }
 
 - (void)viewDidUnload
 {
     [super viewDidUnload];
     // Release any retained subviews of the main view.
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    if ([PFUser currentUser]) {
+        self.navigationItem.rightBarButtonItem.title = @"Log Out";
+    }else{
+        self.navigationItem.rightBarButtonItem.title = @"Log In";
+    }
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -125,21 +122,23 @@
 
 -(void)startConversation:(UIButton *)sender
 {
-    /*[PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"Thechannel"]block:^(BOOL succeeded, NSError *error) {
-        /*[PFPush sendPushDataToChannelInBackground:[NSString stringWithFormat:@"Thechannel"] withData:[NSDictionary dictionary]block:^(BOOL succeeded, NSError *error) {
-            NSLog(@"Stuff");
-        }];*/
-    //}];
-    NSSet *conversations = [[PFUser currentUser] objectForKey:@"conversations"] quer;
-    NSLog(@"here");
-    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-    hud.labelText = [NSString stringWithFormat:@"Finding match..."];
+    // login user if not logged in
+    if (![PFUser currentUser]) {
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"No User Detected" message:@"We're sorry, but you can not use this feature without an account. What would you like to do?" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Sign Up",@"Login", nil];
+        alert.tag = kAlertTag;
+        [alert show];
+        return;
+    }
+
+    [SVProgressHUD showWithStatus:@"Finding match..."];
     
-    PFQuery *query = [PFQuery queryWithClassName:@"Conversation"];
-    [query whereKey:@"status" equalTo:@"pending"];
-    [query whereKey:@"topic" equalTo:sender.titleLabel.text];
-    [query whereKey:@"user1" notEqualTo:[PFUser currentUser]];
-    [query orderByAscending:@"createdAt"];
+    NSString *topic = [sender.titleLabel.text isEqualToString:@"Random"] ? [self randomTopic] : sender.titleLabel.text;
+
+    PFQuery *query = [PFQuery queryWithClassName:ParseConversationClassKey];
+    [query whereKey:ParseConversationStatusKey equalTo:ParseConversationStatusPending];
+    [query whereKey:ParseConversationTopicKey equalTo:topic];
+    [query whereKey:ParseConversationUser1Key notEqualTo:[PFUser currentUser]];
+    [query orderByAscending:ParseObjectCreatedAtKey];
     
     [query getFirstObjectInBackgroundWithBlock:^(PFObject *conversation, NSError *error){
         BOOL isNoResultsError = [[[error userInfo] valueForKey:@"code"] intValue] == 101;
@@ -148,24 +147,22 @@
             NSString *alertMessage;
             // join conversation
             if (conversation){
-                [conversation setValue:@"active" forKey:@"status"];
-                [conversation setValue:[PFUser currentUser] forKey:@"user2"];
-                //[[[PFUser currentUser] objectForKey:@"conversations"]addObject:]
+                [conversation setValue:ParseConversationStatusActive forKey:ParseConversationStatusKey];
+                [conversation setValue:[PFUser currentUser] forKey:ParseConversationUser2Key];
                 
                 alertTitle = @"Conversation Started"; 
-                alertMessage = [NSString stringWithFormat:@"You have entered into a conversation on the subject of %@", sender.titleLabel.text];
+                alertMessage = [NSString stringWithFormat:@"You have entered into a conversation on the subject of %@", topic];
             }
             //create conversation
             else{
-                conversation = [PFObject objectWithClassName:@"Conversation"];
-                [conversation setValue:sender.titleLabel.text forKey:@"topic"];
-                [conversation setValue:[PFUser currentUser] forKey:@"user1"];
-                [conversation setValue:@"pending" forKey:@"status"];
+                conversation = [PFObject objectWithClassName:ParseConversationClassKey];
+                [conversation setValue:topic forKey:ParseConversationTopicKey];
+                [conversation setValue:[PFUser currentUser] forKey:ParseConversationUser1Key];
+                [conversation setValue:ParseConversationStatusPending forKey:ParseConversationStatusKey];
                 
                 alertTitle = @"Conversation Pending";
-                alertMessage = [NSString stringWithFormat:@"There is no immediate match for you on the subject of %@. We will notify you once a suitable match has been found.",sender.titleLabel.text];
+                alertMessage = [NSString stringWithFormat:@"There is no immediate match for you on the subject of %@. We will notify you once a suitable match has been found.",topic];
             }
-            
             [conversation saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error){
                  if (succeeded){
                      PFUser *user = [PFUser currentUser];
@@ -173,16 +170,14 @@
                      [relation addObject:conversation];
                      [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error){
                          if (succeeded){
-                             [ChatterboxDataStore createConversationFromParseObject:conversation error:nil];
-                             [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeNewConversation object:self];
-                             [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"Convo%@",conversation.objectId]block:^(BOOL succeeded, NSError *error) {
-                                 if (succeeded && [[conversation valueForKey:@"status"] isEqualToString:@"active"]) {
-                                     NSDictionary *dataDictionary = [NSDictionary dictionaryWithObjects:@[@0,conversation.objectId,[PFUser currentUser].objectId,@"Increment"]
-                                                                                                forKeys:@[CBAPNTypeKey,CBAPNConvoIDKey,CBAPNSenderIDKey,CBAPNBadgeKey]];
-                                     [PFPush sendPushDataToChannelInBackground:[NSString stringWithFormat:@"Convo%@",conversation.objectId] withData:dataDictionary];
+                             [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeNewConversation object:self userInfo:[NSDictionary dictionaryWithObject:conversation forKey:CBNotificationKeyConvoObj]];
+                                 if ([[conversation valueForKey:ParseConversationStatusKey] isEqualToString:ParseConversationStatusActive]) {
+                                     NSDictionary *dataDictionary = [NSDictionary dictionaryWithObjects:@[@(CBAPNTypeConversationStarted),conversation.objectId,@"Increment"]
+                                                                                                forKeys:@[CBAPNTypeKey,CBAPNConvoIDKey,CBAPNBadgeKey]];
+                                     NSString *channelName = [NSString stringWithFormat:@"U%@",(PFObject*)[[conversation valueForKey:ParseConversationUser1Key] objectId]];
+                                     [PFPush sendPushDataToChannelInBackground:channelName withData:dataDictionary];
                                  }
-                             }];
-                             UIAlertView *alert = [[UIAlertView alloc]initWithTitle:alertTitle message:alertMessage delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                             UIAlertView *alert = [[UIAlertView alloc]initWithTitle:alertTitle message:alertMessage delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
                              [alert show];
                              self.tabBarController.selectedIndex = 1;
                          }
@@ -193,19 +188,40 @@
             NSLog(@"Error: %@", [[error userInfo] valueForKey:@"code"]);
             NSLog(@"FUCKKKKK");
         }
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        [SVProgressHUD dismiss];
     }];
+}
+
+- (NSString*)randomTopic
+{
+    return [[kTopics[arc4random()%(kTopics.count-1)]allKeys]lastObject];
+}
+
+- (void)settingsClicked:(id)sender
+{
+    if ([PFUser currentUser]) {
+        [ParseCenter logout];
+        self.navigationItem.rightBarButtonItem.title = @"Log In";
+    }else{
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"No User Detected" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Sign Up",@"Login", nil];
+        alert.tag = kAlertTag;
+        [alert show];
+    }
 }
 
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if ([alertView.title isEqualToString:@"No User Detected"]) {
-        BOOL login = true;
-        if (buttonIndex == 0) {
-            login = false;
+    if (alertView.tag == kAlertTag) {
+        if (buttonIndex != 0) {
+            BOOL login = YES;
+            if (buttonIndex == 1) {
+                login = NO;
+            }
+            AuthenticationViewController *authVC = [[AuthenticationViewController alloc]initForLogin:login];
+            UINavigationController *navController = [[UINavigationController alloc]initWithRootViewController:authVC];
+            [navController.navigationBar setBarStyle:UIBarStyleBlackTranslucent];
+            [self presentModalViewController:navController animated:YES];
         }
-        AuthenticationViewController *authVC = [[AuthenticationViewController alloc]initForLogin:login];
-        [self presentModalViewController:authVC animated:YES];
     }
 }
 

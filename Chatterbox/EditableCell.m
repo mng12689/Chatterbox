@@ -9,6 +9,7 @@
 #import "EditableCell.h"
 
 #define kTextInset 10
+
 @implementation EditableCell
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
@@ -18,6 +19,8 @@
         self.textField = [[UITextField alloc]initWithFrame:CGRectMake(kTextInset, 0, self.contentView.frame.size.width-kTextInset, self.contentView.frame.size.height)];
         self.textField.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
         [self.textField setContentVerticalAlignment:UIControlContentVerticalAlignmentCenter];
+        self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
+        self.textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         [self.contentView addSubview:self.textField];
     }
     return self;

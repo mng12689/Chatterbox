@@ -7,11 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <Parse/Parse.h>
 @class CBConversation;
 
 @interface TestViewController : UIViewController
 
-@property (strong,nonatomic,readonly) CBConversation *conversation;
--(id)initWithConversation:(CBConversation*)conversation;
+@property (strong,nonatomic,readonly) PFObject *conversation;
+-(id)initWithConversation:(PFObject*)conversation;
 
 @end

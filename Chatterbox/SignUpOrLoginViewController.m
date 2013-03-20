@@ -7,8 +7,7 @@
 //
 
 #import "SignUpOrLoginViewController.h"
-#import <Parse/Parse.h>
-#import "ChatterboxDataStore.h"
+#import "ParseCenter.h"
 
 @interface SignUpOrLoginViewController ()
 
@@ -74,14 +73,11 @@
 - (IBAction)doneButton:(id)sender
 {
     if (self.login) {
-        [PFUser logInWithUsernameInBackground:self.usernameTextField.text password:self.passwordTextField.text block:^(PFUser *user, NSError *error){
-            if (user)
-            {
-                [self loadCoreDataObjectsForUser:[PFUser currentUser]];
+        [ParseCenter logInWithUsernameInBackground:self.usernameTextField.text password:self.passwordTextField.text block:^(PFUser *user, NSError *error){
+            if (user){
                 [self dismissModalViewControllerAnimated:YES];
             }
-            else
-            {
+            else{
                 NSString *errorString = [[error userInfo]objectForKey:@"error"];
                 UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Error" message:errorString delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
                 [alert show];
@@ -89,10 +85,7 @@
         }];
     }
     else{
-        PFUser *user = [PFUser user];
-        user.username = self.usernameTextField.text;
-        user.password = self.passwordTextField.text;
-        [user signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+        [ParseCenter signUpWithUsernameInBackground:self.usernameTextField.text password:self.passwordTextField.text block:^(PFUser *user, NSError *error) {
             if (!error) {
                 [self dismissModalViewControllerAnimated:YES];
             } else {
@@ -102,16 +95,6 @@
             }
         }];
     }
-}
-
-- (void)loadCoreDataObjectsForUser:(PFUser*)user
-{
-    /*PFUser *user = [ChatterboxDataStore fetchUser:user];
-    if (!user) {
-        PFQuery *query = [PFQuery queryWithClassName:@"User"];
-        [query includeKey:@"conversations"];
-        [query includeKey:@"]
-    }*/
 }
 
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event

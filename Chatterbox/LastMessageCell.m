@@ -25,7 +25,6 @@
         self.statusLabel.font = [UIFont fontWithName:@"Cochin" size:17];
         self.statusLabel.backgroundColor = [UIColor clearColor];
         self.statusLabel.textColor = [UIColor darkTextColor];
-        //[self.statusLabel addObserver:self forKeyPath:@"text" options:NSKeyValueObservingOptionNew context:nil];
         self.statusLabel.layer.shadowOffset = CGSizeMake(0.0, 0.0);
         self.statusLabel.layer.shadowRadius = 1.0;
         self.statusLabel.layer.shadowOpacity = 1;

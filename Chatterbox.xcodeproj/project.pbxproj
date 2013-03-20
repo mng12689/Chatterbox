@@ -51,6 +51,14 @@
 		4C4D65E416C5AD20006217B4 /* random_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C4D65E316C5AD20006217B4 /* random_icon.png */; };
 		4C4D65E616C5AD97006217B4 /* travel_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C4D65E516C5AD97006217B4 /* travel_icon.png */; };
 		4C4D65E816C5ADBE006217B4 /* sports_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C4D65E716C5ADBE006217B4 /* sports_icon.png */; };
+		4C4D65EA16C8C4AB006217B4 /* technology_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C4D65E916C8C4AB006217B4 /* technology_icon@2x.png */; };
+		4C4D65EC16C8C4B3006217B4 /* music_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C4D65EB16C8C4B3006217B4 /* music_icon@2x.png */; };
+		4C4D65EE16C8C4DC006217B4 /* music_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C4D65ED16C8C4DC006217B4 /* music_icon.png */; };
+		4C4D65F016C8C4FC006217B4 /* technology_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C4D65EF16C8C4FC006217B4 /* technology_icon.png */; };
+		4C4D65FF16D00E3F006217B4 /* celebrities_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C4D65FE16D00E3F006217B4 /* celebrities_icon@2x.png */; };
+		4C4D660216D00E5A006217B4 /* celebrities_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C4D660116D00E5A006217B4 /* celebrities_icon.png */; };
+		4C4D660416D011F2006217B4 /* politics_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C4D660316D011F2006217B4 /* politics_icon@2x.png */; };
+		4C4D660616D0120C006217B4 /* politics_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C4D660516D0120C006217B4 /* politics_icon.png */; };
 		4C6B6382167EC31800539A8A /* MessageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C6B6381167EC31800539A8A /* MessageCell.m */; };
 		4C6B63851681705600539A8A /* LastMessageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C6B63841681705600539A8A /* LastMessageCell.m */; };
 		4CAE398716AD325F00E3E938 /* glass_button_orange.png in Resources */ = {isa = PBXBuildFile; fileRef = 4CAE398616AD325F00E3E938 /* glass_button_orange.png */; };
@@ -135,6 +143,14 @@
 		4C4D65E316C5AD20006217B4 /* random_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = random_icon.png; sourceTree = "<group>"; };
 		4C4D65E516C5AD97006217B4 /* travel_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = travel_icon.png; sourceTree = "<group>"; };
 		4C4D65E716C5ADBE006217B4 /* sports_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sports_icon.png; sourceTree = "<group>"; };
+		4C4D65E916C8C4AB006217B4 /* technology_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "technology_icon@2x.png"; sourceTree = "<group>"; };
+		4C4D65EB16C8C4B3006217B4 /* music_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "music_icon@2x.png"; sourceTree = "<group>"; };
+		4C4D65ED16C8C4DC006217B4 /* music_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = music_icon.png; sourceTree = "<group>"; };
+		4C4D65EF16C8C4FC006217B4 /* technology_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = technology_icon.png; sourceTree = "<group>"; };
+		4C4D65FE16D00E3F006217B4 /* celebrities_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "celebrities_icon@2x.png"; sourceTree = "<group>"; };
+		4C4D660116D00E5A006217B4 /* celebrities_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = celebrities_icon.png; sourceTree = "<group>"; };
+		4C4D660316D011F2006217B4 /* politics_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "politics_icon@2x.png"; sourceTree = "<group>"; };
+		4C4D660516D0120C006217B4 /* politics_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = politics_icon.png; sourceTree = "<group>"; };
 		4C6B6380167EC31800539A8A /* MessageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageCell.h; sourceTree = "<group>"; };
 		4C6B6381167EC31800539A8A /* MessageCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MessageCell.m; sourceTree = "<group>"; };
 		4C6B63831681705600539A8A /* LastMessageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LastMessageCell.h; sourceTree = "<group>"; };
@@ -429,6 +445,10 @@
 		4CFE51F516C54FF9009B627C /* Button Icons */ = {
 			isa = PBXGroup;
 			children = (
+				4C4D660516D0120C006217B4 /* politics_icon.png */,
+				4C4D660316D011F2006217B4 /* politics_icon@2x.png */,
+				4C4D660116D00E5A006217B4 /* celebrities_icon.png */,
+				4C4D65FE16D00E3F006217B4 /* celebrities_icon@2x.png */,
 				4C4D65E716C5ADBE006217B4 /* sports_icon.png */,
 				4CFE51F816C55458009B627C /* sports_icon@2x.png */,
 				4C4D65E116C5AD07006217B4 /* news_icon.png */,
@@ -445,6 +465,10 @@
 				4CFE520216C564A3009B627C /* movies_icon@2x.png */,
 				4C4D65D816C5AC5C006217B4 /* fashion_icon.png */,
 				4CFE520416C565FE009B627C /* fashion_icon@2x.png */,
+				4C4D65EF16C8C4FC006217B4 /* technology_icon.png */,
+				4C4D65E916C8C4AB006217B4 /* technology_icon@2x.png */,
+				4C4D65ED16C8C4DC006217B4 /* music_icon.png */,
+				4C4D65EB16C8C4B3006217B4 /* music_icon@2x.png */,
 			);
 			name = "Button Icons";
 			sourceTree = "<group>";
@@ -539,6 +563,14 @@
 				4C4D65E416C5AD20006217B4 /* random_icon.png in Resources */,
 				4C4D65E616C5AD97006217B4 /* travel_icon.png in Resources */,
 				4C4D65E816C5ADBE006217B4 /* sports_icon.png in Resources */,
+				4C4D65EA16C8C4AB006217B4 /* technology_icon@2x.png in Resources */,
+				4C4D65EC16C8C4B3006217B4 /* music_icon@2x.png in Resources */,
+				4C4D65EE16C8C4DC006217B4 /* music_icon.png in Resources */,
+				4C4D65F016C8C4FC006217B4 /* technology_icon.png in Resources */,
+				4C4D65FF16D00E3F006217B4 /* celebrities_icon@2x.png in Resources */,
+				4C4D660216D00E5A006217B4 /* celebrities_icon.png in Resources */,
+				4C4D660416D011F2006217B4 /* politics_icon@2x.png in Resources */,
+				4C4D660616D0120C006217B4 /* politics_icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

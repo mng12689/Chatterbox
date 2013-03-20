@@ -8,23 +8,16 @@
 
 #import "TestViewController.h"
 #import <Parse/Parse.h>
-#import "CBConversation.h"
-#import "ChatterboxDataStore.h"
 #import "HPGrowingTextView.h"
 #import <QuartzCore/QuartzCore.h>
-#import "CBMessage.h"
 #import "MessageCell.h"
 #import "AppDelegate.h"
 #import "CBCommons.h"
+#import "ParseCenter.h"
+#import "BlocksKit.h"
+#import "SVProgressHUD.h"
 
 #define kElementPadding 3
-
-//constants for MessageCell
-#define kSpeechBubbleLeftPadding 10
-#define kSpeechBubbleTopPadding 10
-#define kSpeechBubbleMargin 3
-#define kCellWidth 320
-#define kLabelFont [UIFont systemFontOfSize:13]
 
 @interface TestViewController () <UITableViewDelegate, UITableViewDataSource, HPGrowingTextViewDelegate>
 
@@ -33,37 +26,23 @@
 @property (strong, nonatomic) UIButton *sendButton;
 @property (strong, nonatomic) HPGrowingTextView *growingTextView;
 
-@property (strong, nonatomic) CBConversation *conversation;
-@property (strong) NSMutableArray *messages;
+@property (strong, nonatomic) PFObject *conversation;
+@property (strong, nonatomic) NSMutableArray *messages;
+
+@property (strong, nonatomic) NSMutableArray *observers;
 
 @end
 
 @implementation TestViewController
 
--(id)initWithConversation:(CBConversation*)conversation
+-(id)initWithConversation:(PFObject*)conversation
 {
     self = [super init];
     if (self)
     {
-        [[NSNotificationCenter defaultCenter] addObserver:self
-												 selector:@selector(keyboardWillShow:)
-													 name:UIKeyboardWillShowNotification
-												   object:nil];
-        
-		[[NSNotificationCenter defaultCenter] addObserver:self
-												 selector:@selector(keyboardWillHide:)
-													 name:UIKeyboardWillHideNotification
-												   object:nil];
-        
-        [[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeNewMessage object:[[UIApplication sharedApplication]delegate] queue:nil usingBlock:^(NSNotification *note) {
-            [self loadMessages];
-            [self.table reloadData];
-        }];
-        
         self.hidesBottomBarWhenPushed = YES;
-        self.title = conversation.topic;
+        self.title = [conversation valueForKey:ParseConversationTopicKey];
         self.conversation = conversation;
-        [self loadMessages];
     }
     return self;
 }
@@ -117,13 +96,14 @@
     [self.sendButton addTarget:self action:@selector(sendMessage:) forControlEvents:UIControlEventTouchUpInside];
     [self.containerView addSubview:self.sendButton];
     
-    self.table = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+    self.table = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-self.containerView.frame.size.height)];
     self.table.dataSource = self;
     self.table.delegate = self;
     self.table.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.table.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
     self.table.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_paper_bg"]];
     self.table.showsVerticalScrollIndicator = NO;
+    self.table.tableFooterView = [self tableFooterView];
     
     UIView *clearView = [[UIView alloc]initWithFrame:self.navigationController.navigationBar.frame];
     clearView.backgroundColor = [UIColor clearColor];
@@ -131,17 +111,9 @@
     [clearView.layer setShadowColor:[[UIColor blackColor]CGColor]];
     [clearView.layer setShadowOpacity:.5];
     self.table.tableHeaderView = clearView;
-    
-    UIView *clearViewFooter = [[UIView alloc]initWithFrame:self.containerView.frame];
-    clearViewFooter.backgroundColor = [UIColor clearColor];
-    self.table.tableFooterView = clearViewFooter;
 
     [self.view addSubview:self.table];
     [self.view addSubview:self.containerView];
-
-    if (self.messages.count) {
-        [self.table scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:self.messages.count-1 inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:NO];
-    }
     
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
     label.backgroundColor = [UIColor clearColor];
@@ -153,15 +125,10 @@
     self.navigationItem.titleView = label;
     label.text = NSLocalizedString(self.title, @"title for nav bar");
     [label sizeToFit];
-
-    /*UILabel *backButtonLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    backButtonLabel.backgroundColor = [UIColor clearColor];
-    backButtonLabel.shadowColor = [UIColor darkGrayColor];
-    backButtonLabel.shadowOffset = CGSizeMake(0, 1);
-    backButtonLabel.font = [UIFont fontWithName:@"Cochin" size:22];
-    backButtonLabel.textAlignment = NSTextAlignmentCenter;
-    label.textColor = [UIColor lightGrayColor];
-    [label sizeToFit];*/
+    
+    if ([[self.conversation valueForKey:ParseConversationStatusKey]isEqualToString:ParseConversationStatusActive]) {
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"End" style:UIBarButtonItemStylePlain target:self action:@selector(endConversation)];
+    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -171,54 +138,153 @@
     [self setGrowingTextView:nil];
 }
 
-/*-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+-(void)viewWillAppear:(BOOL)animated
 {
-    [self.growingTextView resignFirstResponder];
-}*/
+    __weak TestViewController *currentVC = self;
+    [ParseCenter loadMessagesFromConversation:self.conversation afterDate:nil cachePolicy:kPFCachePolicyCacheThenNetwork handler:^(NSArray *objects, NSError *error) {
+        currentVC.messages = [NSMutableArray arrayWithArray:objects];
+        [currentVC.table reloadData];
+        if (objects.count) {
+            [currentVC.table scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:objects.count-1 inSection:0] atScrollPosition:UITableViewRowAnimationTop animated:NO];
+        }
+    }];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillShow:)
+                                                 name:UIKeyboardWillShowNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillHide:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
+    
+    [self.observers addObject:[[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeAPNNewMessage object:[[UIApplication sharedApplication]delegate] queue:nil usingBlock:^(NSNotification *note) {
+        NSDate *lastMessageDate = [[currentVC.messages lastObject] valueForKey:ParseObjectUpdatedAtKey];
+        [ParseCenter loadMessagesFromConversation:currentVC.conversation afterDate:lastMessageDate cachePolicy:kPFCachePolicyNetworkElseCache handler:^(NSArray *objects, NSError *error) {
+            [currentVC.messages addObjectsFromArray:objects];
+            [currentVC.table reloadData];
+            if (currentVC.messages.count) {
+                [currentVC.table scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:currentVC.messages.count-1 inSection:0] atScrollPosition:UITableViewRowAnimationTop animated:YES];
+            }
+        }];
+    }]];
+    [self.observers addObject:[[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeAPNActiveConvo object:[[UIApplication sharedApplication]delegate] queue:nil usingBlock:^(NSNotification *note) {
+        if ([[note.userInfo valueForKey:CBNotificationKeyConvoId]isEqualToString:currentVC.conversation.objectId]) {
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:NSLocalizedString(@"Conversation Started", @"alert title") message:@"This conversation has become active" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alert show];
+            currentVC.table.tableFooterView = [currentVC tableFooterView];
+            [currentVC.conversation refreshInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                currentVC.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"End" style:UIBarButtonItemStylePlain target:currentVC action:@selector(endConversation)];
+            }];
+        }
+    }]];
+    [self.observers addObject:[[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeAPNEndedConvo object:[[UIApplication sharedApplication]delegate] queue:nil usingBlock:^(NSNotification *note) {
+        if ([[note.userInfo valueForKey:CBNotificationKeyConvoId]isEqualToString:currentVC.conversation.objectId]) {
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:NSLocalizedString(@"Conversation Ended", @"alert title") message:@"The person you were talking to has ended this conversation" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alert show];
+            currentVC.table.tableFooterView = [currentVC tableFooterView];
+            [currentVC.conversation refreshInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                currentVC.navigationItem.rightBarButtonItem = nil;
+            }];
+        }
+    }]];
+}
 
-- (void)loadMessages
+-(void)viewWillDisappear:(BOOL)animated
 {
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"createdAt" ascending:YES];
-    self.messages = [NSMutableArray arrayWithArray:[[self.conversation.messages allObjects] sortedArrayUsingDescriptors:@[sortDescriptor]]];
+    for (id observer in self.observers) {
+        [[NSNotificationCenter defaultCenter]removeObserver:observer];
+    }
+}
+
+-(NSMutableArray *)observers
+{
+    if (!_observers) {
+        _observers = [NSMutableArray new];
+    }
+    return _observers;
 }
 
 - (void)sendMessage:(id)sender
 {
-    if ([self.conversation.status isEqualToString:@"active"]) {
+    if ([[self.conversation valueForKey:ParseConversationStatusKey] isEqualToString:ParseConversationStatusActive]) {
         NSString *message = self.growingTextView.text;
-        
         PFObject *PFMessage = [PFObject objectWithClassName:ParseMessageClassKey];
-        [PFMessage setValue:message forKey:@"text"];
-        [PFMessage setValue:[PFUser currentUser] forKey:@"sender"];
-        [PFMessage setValue:[PFObject objectWithoutDataWithClassName:ParseConversationClassKey objectId:self.conversation.parseObjectID]forKey:@"conversation"];
-
-        __block CBMessage *newMessage = [ChatterboxDataStore createMessageFromParseObject:PFMessage andConversation:self.conversation error:nil];
-        [self.messages addObject:newMessage];
+        [PFMessage setObject:message forKey:ParseMessageTextKey];
+        [PFMessage setObject:[PFUser currentUser] forKey:ParseMessageSenderKey];
+        [PFMessage setObject:[PFObject objectWithoutDataWithClassName:ParseConversationClassKey objectId:self.conversation.objectId]forKey:ParseMessageConversationKey];
         
+        [self.messages addObject:PFMessage];
         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:self.messages.count-1 inSection:0];
         [self.table beginUpdates];
         [self.table insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
         [self.table endUpdates];
         
-        [PFMessage saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error)
-         {
+        __weak TestViewController *currentVC = self;
+        [PFMessage saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error){
              if (succeeded){
-                 [ChatterboxDataStore updateMessage:newMessage withParseObjectDataAfterSave:PFMessage error:nil];
-                 [PFPush sendPushDataToChannelInBackground:[NSString stringWithFormat:@"Convo%@",self.conversation.parseObjectID] withData:[NSDictionary dictionaryWithObjects:@[@1,self.conversation.parseObjectID,[PFUser currentUser].objectId] forKeys:@[CBAPNTypeKey,CBAPNConvoIDKey,CBAPNSenderIDKey]]];
-                 [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeNewMessage object:self userInfo:[NSDictionary dictionaryWithObject:self.conversation forKey:@"conversation"]];
-                 //newMessage.sent = YES;
-             }
-             else{
-                 //newMessage.sent = NO;
-             }
+                 PFRelation *relation = [self.conversation relationforKey:ParseConversationMessagesKey];
+                 [relation addObject:PFMessage];
+                 [currentVC.conversation saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                     if (succeeded) {
+                         NSDictionary *dataDictionary = [NSDictionary dictionaryWithObjects:@[@(CBAPNTypeNewMessage),currentVC.conversation.objectId,@"Increment"]
+                                                                                    forKeys:@[CBAPNTypeKey,CBAPNConvoIDKey,CBAPNBadgeKey]];
+                         PFUser *user1 = [currentVC.conversation valueForKey:ParseConversationUser1Key];
+                         NSString *channelObjID = [user1.objectId isEqualToString:[PFUser currentUser].objectId] ? [[currentVC.conversation valueForKey:ParseConversationUser2Key]objectId] : user1.objectId;
+                         NSString *channelName = [NSString stringWithFormat:@"U%@",channelObjID];
+                         [PFPush sendPushDataToChannelInBackground:channelName withData:dataDictionary];
+                         [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeNewMessage object:currentVC userInfo:[NSDictionary dictionaryWithObject:self.conversation forKey:CBNotificationKeyConvoObj]];
+                     }
+                 }];
+             } 
          }];
         self.growingTextView.text = @"";
         [self.growingTextView resignFirstResponder];
     }else{
-        UIAlertView *alert =[[UIAlertView alloc]initWithTitle:@"Cannot Send" message:@"Sorry, but you cannot send a message until this conversation becomes active. You will be notified once someone has joined this conversation." delegate:nil cancelButtonTitle:@"Okay" otherButtonTitles:nil];
+        NSString *message;
+        if([[self.conversation valueForKey:ParseConversationStatusKey]isEqualToString:ParseConversationStatusPending]){
+            message = @"Sorry, but you cannot send a message until this conversation becomes active. You will be notified once someone has joined this conversation.";
+        }else{
+            message = @"Sorry, but this conversation has been discontinued.";
+        }
+        UIAlertView *alert =[[UIAlertView alloc]initWithTitle:@"Cannot Send" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alert show];
     }
+}
+
+- (void)endConversation
+{
+    __weak TestViewController *weakSelf = self;
     
+    UIAlertView *alert = [UIAlertView alertViewWithTitle:@"End Conversation" message:@"Are you sure you would you like to end this conversation? You cannot undo this action."];
+    [alert addButtonWithTitle:@"Yes" handler:^{
+        [SVProgressHUD showWithStatus:@"Ending conversation"];
+        [ParseCenter endConversation:weakSelf.conversation handler:^(BOOL succeeded, NSError *error) {
+            if (succeeded) {
+                [SVProgressHUD showSuccessWithStatus:@"Conversation ended"];
+                weakSelf.table.tableFooterView = [self tableFooterView];
+                weakSelf.navigationItem.rightBarButtonItem = nil;
+                [weakSelf.table reloadData];
+                
+                [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeEndedConvo object:weakSelf userInfo:[NSDictionary dictionaryWithObject:weakSelf.conversation forKey:CBNotificationKeyConvoObj]];
+                NSDictionary *dataDictionary = [NSDictionary dictionaryWithObjects:@[@(CBAPNTypeConversationEnded),weakSelf.conversation.objectId,@"Increment"]
+                                                                           forKeys:@[CBAPNTypeKey,CBAPNConvoIDKey,CBAPNBadgeKey]];
+                NSString *otherUserId;
+                if (![[PFUser currentUser].objectId isEqualToString:[[weakSelf.conversation objectForKey:ParseConversationUser1Key]objectId]]) {
+                    otherUserId = [[weakSelf.conversation objectForKey:ParseConversationUser1Key]objectId];
+                }else{
+                    otherUserId = [[weakSelf.conversation objectForKey:ParseConversationUser2Key]objectId];
+                }
+                NSString *channelName = [NSString stringWithFormat:@"U%@",otherUserId];
+                [PFPush sendPushDataToChannelInBackground:channelName withData:dataDictionary];
+            }else{
+                [SVProgressHUD showSuccessWithStatus:@"Error: Conversation not ended"];
+            }
+        }];
+    }];
+    [alert setCancelButtonWithTitle:@"Cancel" handler:^{}];
+    [alert show];
 }
 
 #pragma mark - tableView data source methods
@@ -244,13 +310,32 @@
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    CBMessage *message = [self.messages objectAtIndex:indexPath.row];
-    CGSize labelSize = [message.text sizeWithFont:kLabelFont constrainedToSize:CGSizeMake((kCellWidth/2+20)-2*kSpeechBubbleLeftPadding, CGFLOAT_MAX)];
-    float speechBubbleHeight = labelSize.height+2*kSpeechBubbleTopPadding;
-    return speechBubbleHeight + 2*kSpeechBubbleMargin;
+    PFObject *message = [self.messages objectAtIndex:indexPath.row];
+    return [MessageCell heightForCellWithText:[message valueForKey:ParseMessageTextKey]];
+}
+
+- (UILabel*)tableFooterView
+{
+    NSString *status = [self.conversation objectForKey:ParseConversationStatusKey];
+    if ([status isEqualToString:ParseConversationStatusEnded]) {
+        UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, self.table.frame.size.width, 20)];
+        label.backgroundColor = [UIColor clearColor];
+        label.font = [UIFont boldSystemFontOfSize:14];
+        label.textAlignment = NSTextAlignmentCenter;
+        label.textColor = [UIColor redColor];
+        label.text = @"Conversation Ended";
+        return label;
+    }
+    return nil;
 }
 
 #pragma mark - tableView delegate methods
+/*-(void) tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if([indexPath row] == ((NSIndexPath*)[[tableView indexPathsForVisibleRows] lastObject]).row){
+        [self.table scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewRowAnimationTop animated:NO];
+    }
+}*/
 
 #pragma mark - HPGrowingTextView delegate methods
 
@@ -286,6 +371,9 @@
 	// get a rect for the textView frame
 	CGRect containerFrame = self.containerView.frame;
     containerFrame.origin.y = self.view.bounds.size.height - (keyboardBounds.size.height + containerFrame.size.height);
+    CGRect tableFrame = self.table.frame;
+    tableFrame.size.height = self.table.bounds.size.height - keyboardBounds.size.height;
+    
 	// animations settings
 	[UIView beginAnimations:nil context:NULL];
 	[UIView setAnimationBeginsFromCurrentState:YES];
@@ -294,7 +382,10 @@
     
 	// set views with new info
 	self.containerView.frame = containerFrame;
-    
+    self.table.frame = tableFrame;
+    if (self.messages.count) {
+        [self.table scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:self.messages.count-1 inSection:0] atScrollPosition:UITableViewRowAnimationTop animated:YES];
+    }
 	// commit animations
 	[UIView commitAnimations];
 }
@@ -306,6 +397,8 @@
 	// get a rect for the textView frame
 	CGRect containerFrame = self.containerView.frame;
     containerFrame.origin.y = self.view.bounds.size.height - containerFrame.size.height;
+    CGRect tableFrame = self.table.frame;
+    tableFrame.size.height = self.view.bounds.size.height-containerFrame.size.height;
     
 	// animations settings
 	[UIView beginAnimations:nil context:NULL];
@@ -315,10 +408,12 @@
     
 	// set views with new info
 	self.containerView.frame = containerFrame;
-    
+    self.table.frame = tableFrame;
+    if (self.messages.count) {
+        [self.table scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:self.messages.count-1 inSection:0] atScrollPosition:UITableViewRowAnimationTop animated:YES];
+    }
 	// commit animations
 	[UIView commitAnimations];
 }
-
 
 @end

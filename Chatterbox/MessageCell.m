@@ -7,8 +7,8 @@
 //
 
 #import "MessageCell.h"
-#import "CBMessage.h"
 #import <Parse/Parse.h>
+#import "CBCommons.h"
 
 #define kSpeechBubbleLeftPadding 10
 #define kSpeechBubbleTopPadding 10
@@ -42,23 +42,29 @@
     // Configure the view for the selected state
 }
 
--(void)setMessage:(CBMessage*)message
+-(void)setMessage:(PFObject*)message
 {
-    CGSize labelSize = [message.text sizeWithFont:kLabelFont constrainedToSize:CGSizeMake((self.frame.size.width/2+20)-2*kSpeechBubbleLeftPadding, CGFLOAT_MAX)];
+    CGSize labelSize = [[message valueForKey:@"text"] sizeWithFont:kLabelFont constrainedToSize:CGSizeMake((self.frame.size.width-20)-2*kSpeechBubbleLeftPadding, CGFLOAT_MAX)];
     self.messageLabel.frame = CGRectMake(kSpeechBubbleLeftPadding, kSpeechBubbleTopPadding, labelSize.width, labelSize.height);
-    self.messageLabel.text = message.text;
+    self.messageLabel.text = [message valueForKey:@"text"];
     
-    BOOL messageSentByUser = [message.senderID isEqualToString:[PFUser currentUser].objectId];
+    BOOL messageSentByUser = ([[[message objectForKey:ParseMessageSenderKey]objectId] isEqualToString:[PFUser currentUser].objectId]);
     float xOrigin = messageSentByUser ? (self.contentView.frame.origin.x+self.contentView.frame.size.width)-(self.messageLabel.frame.size.width+2*kSpeechBubbleLeftPadding)-kSpeechBubbleMargin : kSpeechBubbleMargin;
     UIImageView *speechBubble = [[UIImageView alloc]initWithFrame:CGRectMake(xOrigin,
                                                                             kSpeechBubbleMargin,
                                                                             self.messageLabel.frame.size.width+2*kSpeechBubbleLeftPadding,
                                                                             self.messageLabel.frame.size.height+2*kSpeechBubbleTopPadding)];
-    NSString *imageName = messageSentByUser ? @"speech_bubble_gray_with_glow" : @"speech_bubble_orange";
+    NSString *imageName = messageSentByUser ? @"speech_bubble_gray_with_glow" : @"speech_bubble_gray";
     speechBubble.image = [[UIImage imageNamed:imageName] stretchableImageWithLeftCapWidth:10 topCapHeight:12];//resizableImageWithCapInsets:UIEdgeInsetsMake(10, 10, 10, 10) resizingMode:UIImageResizingModeStretch];
     [speechBubble addSubview:self.messageLabel];
     //speechBubble.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
     [self.contentView addSubview:speechBubble];
 }
 
++ (float)heightForCellWithText:(NSString*)text
+{
+    CGSize labelSize = [text sizeWithFont:kLabelFont constrainedToSize:CGSizeMake((320-20)-2*kSpeechBubbleLeftPadding, CGFLOAT_MAX)];
+    float speechBubbleHeight = labelSize.height+2*kSpeechBubbleTopPadding;
+    return speechBubbleHeight + 2*kSpeechBubbleMargin;
+}
 @end
