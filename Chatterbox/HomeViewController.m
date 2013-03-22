@@ -14,6 +14,7 @@
 #import "CBCommons.h"
 #import "ParseCenter.h"
 #import "BlocksKit.h"
+#import "NSError+ParseErrorCodes.h"
 
 #define kAlertTag 89043
 #define kTopics @[@{@"News":@"news_icon"},@{@"Sports":@"sports_icon"},@{@"Politics":@"politics_icon"},@{@"Finance":@"finance_icon"},@{@"Celebrities":@"celebrities_icon"},@{@"Health":@"fitness_icon"},@{@"Fashion":@"fashion_icon"},@{@"Technology":@"technology_icon"},@{@"Music":@"music_icon"},@{@"Movies":@"movies_icon"},@{@"Travel":@"travel_icon"},@{@"Random":@"random_icon"}]
@@ -180,13 +181,15 @@
                              UIAlertView *alert = [[UIAlertView alloc]initWithTitle:alertTitle message:alertMessage delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
                              [alert show];
                              self.tabBarController.selectedIndex = 1;
-                         }
+                         }else{
+                             [error handleErrorWithAlert:NO];                         }
                      }];
+                 }else{
+                     [error handleErrorWithAlert:NO];
                  }
              }];
         }else{
-            NSLog(@"Error: %@", [[error userInfo] valueForKey:@"code"]);
-            NSLog(@"FUCKKKKK");
+            [error handleErrorWithAlert:NO];
         }
         [SVProgressHUD dismiss];
     }];

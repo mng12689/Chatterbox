@@ -14,5 +14,7 @@
 
 -(void)setMessage:(NSString*)message;
 + (float)heightForCellWithText:(NSString*)text;
+-(void)addFailureAlertWithBlock:(void(^)(id sender))block;
+-(void)removeFailureAlert;
 
 @end

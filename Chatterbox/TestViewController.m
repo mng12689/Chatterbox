@@ -16,6 +16,7 @@
 #import "ParseCenter.h"
 #import "BlocksKit.h"
 #import "SVProgressHUD.h"
+#import "NSError+ParseErrorCodes.h"
 
 #define kElementPadding 3
 
@@ -56,7 +57,7 @@
                                                                  self.view.frame.size.width,
                                                                  38)];
     self.containerView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
-    self.containerView.image = [[UIImage imageNamed:@"send_message_bar"]stretchableImageWithLeftCapWidth:0 topCapHeight:0];
+    self.containerView.image = [[UIImage imageNamed:@"send_message_bar"]stretchableImageWithLeftCapWidth:0 topCapHeight:6];
     self.containerView.layer.zPosition = 100;
     self.containerView.userInteractionEnabled = YES;
     
@@ -68,7 +69,7 @@
     self.growingTextView.userInteractionEnabled = YES;
     self.growingTextView.minNumberOfLines = 1;
     self.growingTextView.maxNumberOfLines = 5;
-    self.growingTextView.returnKeyType = UIReturnKeySend;
+    //self.growingTextView.returnKeyType = UIReturnKeySend;
     self.growingTextView.internalTextView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 5, 0, 5);
     self.growingTextView.delegate = self;
     self.growingTextView.clipsToBounds = YES;
@@ -77,7 +78,7 @@
     self.growingTextView.layer.borderColor = [[UIColor grayColor]CGColor];
     self.growingTextView.layer.borderWidth = 1.0;
     self.growingTextView.userInteractionEnabled = YES;
-    //self.growingTextView.internalTextView.keyboardType = UIKeyboardt
+    //self.growingTextView.internalTextView.returnKeyType = UIReturnKeySend;
     [self.containerView addSubview:self.growingTextView];
     
     self.sendButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -93,7 +94,7 @@
                                        self.growingTextView.frame.size.height);
     self.sendButton.userInteractionEnabled = YES;
     [self.sendButton setEnabled:NO];
-    [self.sendButton addTarget:self action:@selector(sendMessage:) forControlEvents:UIControlEventTouchUpInside];
+    [self.sendButton addTarget:self action:@selector(sendNewMessage) forControlEvents:UIControlEventTouchUpInside];
     [self.containerView addSubview:self.sendButton];
     
     self.table = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-self.containerView.frame.size.height)];
@@ -142,10 +143,12 @@
 {
     __weak TestViewController *currentVC = self;
     [ParseCenter loadMessagesFromConversation:self.conversation afterDate:nil cachePolicy:kPFCachePolicyCacheThenNetwork handler:^(NSArray *objects, NSError *error) {
-        currentVC.messages = [NSMutableArray arrayWithArray:objects];
-        [currentVC.table reloadData];
-        if (objects.count) {
-            [currentVC.table scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:objects.count-1 inSection:0] atScrollPosition:UITableViewRowAnimationTop animated:NO];
+        if (!error) {
+            currentVC.messages = [NSMutableArray arrayWithArray:objects];
+            [currentVC.table reloadData];
+            if (objects.count) {
+                [currentVC.table scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:objects.count-1 inSection:0] atScrollPosition:UITableViewRowAnimationTop animated:NO];
+            }
         }
     }];
     
@@ -206,12 +209,19 @@
     return _observers;
 }
 
-- (void)sendMessage:(id)sender
+-(NSMutableArray *)messages
+{
+    if (!_messages) {
+        _messages = [NSMutableArray new];
+    }
+    return _messages;
+}
+
+- (void)sendNewMessage
 {
     if ([[self.conversation valueForKey:ParseConversationStatusKey] isEqualToString:ParseConversationStatusActive]) {
-        NSString *message = self.growingTextView.text;
         PFObject *PFMessage = [PFObject objectWithClassName:ParseMessageClassKey];
-        [PFMessage setObject:message forKey:ParseMessageTextKey];
+        [PFMessage setObject:self.growingTextView.text forKey:ParseMessageTextKey];
         [PFMessage setObject:[PFUser currentUser] forKey:ParseMessageSenderKey];
         [PFMessage setObject:[PFObject objectWithoutDataWithClassName:ParseConversationClassKey objectId:self.conversation.objectId]forKey:ParseMessageConversationKey];
         
@@ -221,6 +231,25 @@
         [self.table insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
         [self.table endUpdates];
         
+        [self sendMessage:PFMessage];
+        
+        self.growingTextView.text = @"";
+        [self.growingTextView resignFirstResponder];
+    }else{
+        NSString *message;
+        if([[self.conversation valueForKey:ParseConversationStatusKey]isEqualToString:ParseConversationStatusPending]){
+            message = @"Sorry, but you cannot send a message until this conversation becomes active. You will be notified once someone has joined this conversation.";
+        }else{
+            message = @"Sorry, but this conversation has been discontinued.";
+        }
+        UIAlertView *alert =[[UIAlertView alloc]initWithTitle:@"Cannot Send" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [alert show];
+    }    
+}
+
+- (void)sendMessage:(PFObject*)PFMessage
+{
+    if ([[self.conversation valueForKey:ParseConversationStatusKey] isEqualToString:ParseConversationStatusActive]) {
         __weak TestViewController *currentVC = self;
         [PFMessage saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error){
              if (succeeded){
@@ -235,12 +264,14 @@
                          NSString *channelName = [NSString stringWithFormat:@"U%@",channelObjID];
                          [PFPush sendPushDataToChannelInBackground:channelName withData:dataDictionary];
                          [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeNewMessage object:currentVC userInfo:[NSDictionary dictionaryWithObject:self.conversation forKey:CBNotificationKeyConvoObj]];
+                     }else{
+                         [self handleFailedSendOfMessage:PFMessage];
                      }
                  }];
-             } 
+             }else{
+                 [self handleFailedSendOfMessage:PFMessage];
+             }
          }];
-        self.growingTextView.text = @"";
-        [self.growingTextView resignFirstResponder];
     }else{
         NSString *message;
         if([[self.conversation valueForKey:ParseConversationStatusKey]isEqualToString:ParseConversationStatusPending]){
@@ -251,6 +282,24 @@
         UIAlertView *alert =[[UIAlertView alloc]initWithTitle:@"Cannot Send" message:message delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alert show];
     }
+}
+
+- (void)handleFailedSendOfMessage:(PFObject*)PFMessage
+{
+    NSInteger row = [self.messages indexOfObject:PFMessage];
+    MessageCell *cell = (MessageCell*)[self.table cellForRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:0]];
+    __weak TestViewController *weakSelf = self;
+    __weak MessageCell *weakCell = cell;
+    [cell addFailureAlertWithBlock:^(id sender) {
+        UIActionSheet *actionSheet = [UIActionSheet actionSheetWithTitle:@"Resend Message"];
+        [actionSheet addButtonWithTitle:@"Resend" handler:^{
+            [weakCell removeFailureAlert];
+            [weakSelf sendMessage:PFMessage];
+        }];
+        [actionSheet addButtonWithTitle:@"Cancel"];
+        [actionSheet setActionSheetStyle:UIActionSheetStyleBlackTranslucent];
+        [actionSheet showInView:weakSelf.table];
+    }];
 }
 
 - (void)endConversation
@@ -279,7 +328,8 @@
                 NSString *channelName = [NSString stringWithFormat:@"U%@",otherUserId];
                 [PFPush sendPushDataToChannelInBackground:channelName withData:dataDictionary];
             }else{
-                [SVProgressHUD showSuccessWithStatus:@"Error: Conversation not ended"];
+                [SVProgressHUD dismiss];
+                [error handleErrorWithAlert:NO];
             }
         }];
     }];

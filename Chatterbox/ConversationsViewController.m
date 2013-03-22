@@ -17,6 +17,7 @@
 #import "BlocksKit.h"
 #import "ParseCenter.h"
 #import "AuthenticationViewController.h"
+#import "NSError+ParseErrorCodes.h"
 
 #define kAlertTag 89043
 
@@ -76,11 +77,13 @@
             NSString *topic = [self.topics objectAtIndex:indexPath.section];
             PFObject *convoObj = [currentVC.conversationsByTopic objectForKey:topic][indexPath.row];
             [convoObj refreshInBackgroundWithBlock:^(PFObject *object, NSError *error) {
-                [currentVC loadDataSourceWithConversations:currentVC.conversations];
-                [currentVC.table beginUpdates];
-                [currentVC.table reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationAutomatic];
-                [currentVC.table endUpdates];
-                currentVC.lastMessageCachePolicy = kPFCachePolicyCacheElseNetwork;
+                if (!error) {
+                    [currentVC loadDataSourceWithConversations:currentVC.conversations];
+                    [currentVC.table beginUpdates];
+                    [currentVC.table reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationAutomatic];
+                    [currentVC.table endUpdates];
+                    currentVC.lastMessageCachePolicy = kPFCachePolicyCacheElseNetwork;
+                }
             }];
         }]];
         [self.observers addObject:[[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeAPNNewMessage object:nil queue:nil usingBlock:^(NSNotification *note) {
@@ -97,10 +100,12 @@
             NSString *topic = [self.topics objectAtIndex:indexPath.section];
             PFObject *convoObj = [currentVC.conversationsByTopic objectForKey:topic][indexPath.row];
             [convoObj refreshInBackgroundWithBlock:^(PFObject *object, NSError *error) {
-                [currentVC loadDataSourceWithConversations:currentVC.conversations];
-                [currentVC.table beginUpdates];
-                [currentVC.table reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationAutomatic];
-                [currentVC.table endUpdates];
+                if (!error) {
+                    [currentVC loadDataSourceWithConversations:currentVC.conversations];
+                    [currentVC.table beginUpdates];
+                    [currentVC.table reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationAutomatic];
+                    [currentVC.table endUpdates];
+                }
             }];
         }]];
         
@@ -187,6 +192,14 @@
 - (void)viewDidUnload {
     [self setTable:nil];
     [super viewDidUnload];
+}
+
+-(NSMutableArray *)conversations
+{
+    if (!_conversations) {
+        _conversations = [NSMutableArray new];
+    }
+    return _conversations;
 }
 
 - (void)settingsClicked:(id)sender
@@ -351,21 +364,22 @@
             PFObject *conversation = [[weakSelf.conversationsByTopic valueForKey:[weakSelf.topics objectAtIndex:indexPath.section]]objectAtIndex:indexPath.row];
             [[[PFUser currentUser]relationforKey:ParseUserConversationsKey]removeObject:conversation];
             [[PFUser currentUser]saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-                [weakSelf.conversations removeObject:conversation];
-                [weakSelf loadDataSourceWithConversations:weakSelf.conversations];
-                
-                [weakSelf.table beginUpdates];
-                if ([weakSelf.conversationsByTopic objectForKey:[conversation valueForKey:ParseConversationTopicKey]]) {
-                    [weakSelf.table deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationBottom];
-                }else{
-                    [weakSelf.table deleteSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationBottom];
+                if (succeeded) {
+                    [weakSelf.conversations removeObject:conversation];
+                    [weakSelf loadDataSourceWithConversations:weakSelf.conversations];
+                    
+                    [weakSelf.table beginUpdates];
+                    if ([weakSelf.conversationsByTopic objectForKey:[conversation valueForKey:ParseConversationTopicKey]]) {
+                        [weakSelf.table deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationBottom];
+                    }else{
+                        [weakSelf.table deleteSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationBottom];
+                    }
+                    [weakSelf.table endUpdates];
                 }
-                [weakSelf.table endUpdates];
             }];
         }];
         [alert setCancelButtonWithTitle:@"Cancel" handler:^{}];
         [alert show];
-
     }
 }
 

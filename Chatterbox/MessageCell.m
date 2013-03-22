@@ -9,13 +9,19 @@
 #import "MessageCell.h"
 #import <Parse/Parse.h>
 #import "CBCommons.h"
+#import "BlocksKit.h"
+#import "ParseCenter.h"
 
 #define kSpeechBubbleLeftPadding 10
 #define kSpeechBubbleTopPadding 10
 #define kSpeechBubbleMargin 3
 #define kLabelFont [UIFont systemFontOfSize:13]
+#define kImageViewSize 20
 
 @interface MessageCell ()
+
+@property (nonatomic,strong) UIImageView *speechBubble;
+@property (nonatomic,strong) UIButton *failureButton;
 
 @end
 
@@ -55,10 +61,10 @@
                                                                             self.messageLabel.frame.size.width+2*kSpeechBubbleLeftPadding,
                                                                             self.messageLabel.frame.size.height+2*kSpeechBubbleTopPadding)];
     NSString *imageName = messageSentByUser ? @"speech_bubble_gray_with_glow" : @"speech_bubble_gray";
-    speechBubble.image = [[UIImage imageNamed:imageName] stretchableImageWithLeftCapWidth:10 topCapHeight:12];//resizableImageWithCapInsets:UIEdgeInsetsMake(10, 10, 10, 10) resizingMode:UIImageResizingModeStretch];
+    speechBubble.image = [[UIImage imageNamed:imageName] stretchableImageWithLeftCapWidth:10 topCapHeight:12];
     [speechBubble addSubview:self.messageLabel];
-    //speechBubble.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
     [self.contentView addSubview:speechBubble];
+    self.speechBubble = speechBubble;
 }
 
 + (float)heightForCellWithText:(NSString*)text
@@ -67,4 +73,38 @@
     float speechBubbleHeight = labelSize.height+2*kSpeechBubbleTopPadding;
     return speechBubbleHeight + 2*kSpeechBubbleMargin;
 }
+
+-(void)addFailureAlertWithBlock:(void(^)(id sender))block
+{
+    UIButton *failureButton = [[UIButton alloc]initWithFrame:CGRectMake(self.contentView.frame.size.width-kImageViewSize-5, self.contentView.frame.size.height-kImageViewSize-kSpeechBubbleTopPadding, kImageViewSize, kImageViewSize)];
+    failureButton.backgroundColor = [UIColor clearColor];
+    [failureButton setBackgroundImage:[UIImage imageNamed:@"exclamation"] forState:UIControlStateNormal];
+    failureButton.alpha = 0;
+    [failureButton addEventHandler:^(id sender) {
+        block(sender);
+    } forControlEvents:UIControlEventTouchUpInside];
+    self.failureButton = failureButton;
+    [self.contentView addSubview:self.failureButton];
+    [UIView animateWithDuration:.3 animations:^{
+        self.speechBubble.center = CGPointMake(self.speechBubble.center.x-kImageViewSize-kSpeechBubbleMargin, self.speechBubble.center.y);
+    }completion:^(BOOL finished) {
+        [UIView animateWithDuration:.2 animations:^{
+            self.failureButton.alpha = 1;
+        }];
+    }];
+}
+
+-(void)removeFailureAlert
+{
+    [UIView animateWithDuration:.3 animations:^{
+        self.failureButton.alpha = 0;
+    }completion:^(BOOL finished) {
+        [UIView animateWithDuration:.2 animations:^{
+            [self.failureButton removeFromSuperview];
+            self.failureButton = nil;
+            self.speechBubble.center = CGPointMake(self.speechBubble.center.x+kImageViewSize+kSpeechBubbleMargin, self.speechBubble.center.y);
+        }];
+    }];
+}
+
 @end

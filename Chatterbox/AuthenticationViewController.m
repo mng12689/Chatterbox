@@ -14,6 +14,10 @@
 #import "CBCommons.h"
 #import "SVProgressHUD.h"
 #import <QuartzCore/QuartzCore.h>
+#import "NSError+ParseErrorCodes.h"
+
+#define kUsernameTextFieldTag 48239
+#define kPasswordTextFieldTag 99320
 
 @interface AuthenticationViewController () <UITableViewDataSource,UITableViewDelegate>
 
@@ -75,7 +79,7 @@
         [animation setDuration:.25];
         [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
         [animation setFillMode:@"extended"];
-        [self.view.layer addAnimation:animation forKey:@"reloadAnimation"];
+        [weakAuthVC.view.layer addAnimation:animation forKey:@"reloadAnimation"];
     } forControlEvents:UIControlEventTouchUpInside];
     if (!self.login) {
         [footer setTitle:NSLocalizedString(@"Already have an account? Log in here.", @"change to log in") forState:UIControlStateNormal];
@@ -98,7 +102,7 @@
     [label sizeToFit];
     
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemCancel handler:^(id sender) {
-        [self dismissModalViewControllerAnimated:YES];
+        [weakAuthVC dismissModalViewControllerAnimated:YES];
     }];
 }
 
@@ -109,20 +113,17 @@
 
 -(void)viewWillAppear:(BOOL)animated
 {
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillShow:)
-                                                 name:UIKeyboardWillShowNotification
-                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillHide:)
-                                                 name:UIKeyboardWillHideNotification
-                                               object:nil];
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(textFieldDidChange:) name:UITextFieldTextDidChangeNotification object:nil];
 }
 
 -(void)viewWillDisappear:(BOOL)animated
 {
-    [[NSNotificationCenter defaultCenter]removeObserver:self];
+    [[NSNotificationCenter defaultCenter]removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter]removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+    [[NSNotificationCenter defaultCenter]removeObserver:self name:UITextFieldTextDidChangeNotification object:nil];
 }
 
 - (void)didReceiveMemoryWarning
@@ -136,18 +137,20 @@
 }
 - (void)authenticate
 {
+    __weak AuthenticationViewController *weakSelf = self;
     [self.tableView endEditing:YES];
     if (self.login) {
         [SVProgressHUD showWithStatus:@"Attempting log in..."];
         [PFUser logInWithUsernameInBackground:self.username password:self.password block:^(PFUser *user, NSError *error){
             if (user){
-                [self loadUserConversations];
+                [weakSelf loadUserConversations];
                 [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"U%@",[PFUser currentUser].objectId]];
-                [self dismissModalViewControllerAnimated:YES];
+                [weakSelf dismissModalViewControllerAnimated:YES];
                 [SVProgressHUD showSuccessWithStatus:@"Log in successful"];
             }
             else{
-                [SVProgressHUD showErrorWithStatus:@"Error: Could not log in"];
+                [SVProgressHUD dismiss];
+                [error handleErrorWithAlert:YES];
             }
         }];
     }
@@ -155,26 +158,32 @@
         PFUser *user = [PFUser user];
         user.username = self.username;
         user.password = self.password;
-        [SVProgressHUD showWithStatus:@"Attempting sign up..."];
-        [user signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-            if (!error) {
-                [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"U%@",[PFUser currentUser].objectId]];
-                [self dismissModalViewControllerAnimated:YES];
-                [SVProgressHUD showSuccessWithStatus:@"Sign up successful"];
-            } else {
-                [SVProgressHUD showErrorWithStatus:@"Error: Could not sign up"];
-            }
-        }];
+        if (self.username.length && self.password.length) {
+            [SVProgressHUD showWithStatus:@"Attempting sign up..."];
+            [user signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                if (!error) {
+                    [PFPush subscribeToChannelInBackground:[NSString stringWithFormat:@"U%@",[PFUser currentUser].objectId]];
+                    [weakSelf dismissModalViewControllerAnimated:YES];
+                    [SVProgressHUD showSuccessWithStatus:@"Sign up successful"];
+                } else {
+                    [SVProgressHUD dismiss];
+                    [error handleErrorWithAlert:YES];
+                }
+            }];
+        }else{
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Must provide both a username and password" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alert show];
+        }
     }
 }
 
 - (void)loadUserConversations
 {
+    __weak AuthenticationViewController *weakSelf = self;
     PFQuery *query = [[[PFUser currentUser]relationforKey:ParseUserConversationsKey]query];
     query.cachePolicy = kPFCachePolicyNetworkElseCache;
-    //[query includeKey:ParseUserConversationsKey];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeUserLoaded object:self];
+        [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeUserLoaded object:weakSelf];
     }];
 }
 
@@ -207,34 +216,26 @@
     static NSString *doneButtonCellIdentifier = @"doneButtonCell";
     
     UITableViewCell *cell = nil;
-    AuthenticationViewController *weakAuthVC = self;
     if (indexPath.section == 0) {
         EditableCell *eCell = [tableView dequeueReusableCellWithIdentifier:editableCellIdentifier];
         if (!cell) {
             eCell = [[EditableCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:editableCellIdentifier];
         }
-        if (indexPath.row == 0) {
-            eCell.textLabel.text = nil;
-            
+        if (indexPath.row == 0) {            
             eCell.textField.placeholder = @"Username";
             eCell.textField.secureTextEntry = NO;
-            [eCell.textField removeAllBlockObservers];
-            [eCell.textField addObserverForKeyPath:@"text" options:NSKeyValueObservingOptionNew task:^(id obj, NSDictionary *change) {
-                weakAuthVC.username = [change valueForKey:NSKeyValueChangeNewKey];
-            }];
+            eCell.textField.tag = kUsernameTextFieldTag;
         }else if (indexPath.row == 1){
             eCell.textField.placeholder = @"Password";
             eCell.textField.secureTextEntry = YES;
-            [eCell.textField removeAllBlockObservers];
-            [eCell.textField addObserverForKeyPath:@"text" options:NSKeyValueObservingOptionNew task:^(id obj, NSDictionary *change) {
-                weakAuthVC.password = [change valueForKey:NSKeyValueChangeNewKey];
-            }];
+            eCell.textField.tag = kPasswordTextFieldTag;
         }
         cell = eCell;
     }else if (indexPath.section == 1){
         cell = [tableView dequeueReusableCellWithIdentifier:doneButtonCellIdentifier];
         if (!cell) {
             cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:doneButtonCellIdentifier];
+            cell.selectionStyle = UITableViewCellSelectionStyleGray;
         }
         cell.backgroundColor = [UIColor colorWithWhite:.9 alpha:1];
 
@@ -244,12 +245,6 @@
         cell.textLabel.textColor = [CBCommons chatterboxOrange];
         cell.textLabel.shadowColor = [UIColor whiteColor];
         cell.textLabel.shadowOffset = CGSizeMake(0, 1);
-        /*UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        button.frame = CGRectMake(0, 0, cell.contentView.frame.size.width, cell.contentView.frame.size.height);
-        button.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-        [button setTitle:@"Done" forState:UIControlStateNormal];
-        [button addTarget:self action:@selector(authenticate:) forControlEvents:UIControlEventTouchUpInside];
-        [cell.contentView addSubview:button];*/
     }
     return cell;
 }
@@ -317,6 +312,23 @@
 
 	// commit animations
 	[UIView commitAnimations];
+}
+
+#pragma mark - NSNotificationCenter observers
+- (void)textFieldDidChange:(NSNotification*)note
+{
+    UITextField *textField = (UITextField*)note.object;
+    NSString *newText = textField.text;
+    switch (textField.tag) {
+        case kUsernameTextFieldTag:
+            self.username = newText;
+            break;
+        case kPasswordTextFieldTag:
+            self.password = newText;
+            break;
+        default:
+            break;
+    }
 }
 
 @end

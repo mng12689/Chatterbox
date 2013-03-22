@@ -84,4 +84,26 @@
     }];
 }
 
++ (void)sendMessage:(PFObject*)message conversation:(PFObject*)conversation block:(void(^)(BOOL succeeded, NSError *error))block
+{
+    [message saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error){
+        if (succeeded){
+            PFRelation *relation = [conversation relationforKey:ParseConversationMessagesKey];
+            [relation addObject:message];
+            [conversation saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                if (succeeded) {
+                    NSDictionary *dataDictionary = [NSDictionary dictionaryWithObjects:@[@(CBAPNTypeNewMessage),conversation.objectId,@"Increment"]
+                                                                               forKeys:@[CBAPNTypeKey,CBAPNConvoIDKey,CBAPNBadgeKey]];
+                    PFUser *user1 = [conversation valueForKey:ParseConversationUser1Key];
+                    NSString *channelObjID = [user1.objectId isEqualToString:[PFUser currentUser].objectId] ? [[conversation valueForKey:ParseConversationUser2Key]objectId] : user1.objectId;
+                    NSString *channelName = [NSString stringWithFormat:@"U%@",channelObjID];
+                    [PFPush sendPushDataToChannelInBackground:channelName withData:dataDictionary];
+                    //[[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeNewMessage object:currentVC userInfo:[NSDictionary dictionaryWithObject:self.conversation forKey:CBNotificationKeyConvoObj]];
+                }
+            }];
+        }
+        block(succeeded,error);
+    }];
+}
+
 @end

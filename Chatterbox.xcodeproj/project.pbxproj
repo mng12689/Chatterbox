@@ -42,6 +42,9 @@
 		4C0B9A441636621200EC7246 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C0B9A431636621200EC7246 /* Security.framework */; };
 		4C0B9A461636621A00EC7246 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C0B9A451636621A00EC7246 /* StoreKit.framework */; };
 		4C0B9A481636622000EC7246 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C0B9A471636622000EC7246 /* SystemConfiguration.framework */; };
+		4C12992216FBFA5E00B9EBC9 /* NSError+ParseErrorCodes.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C12992116FBFA5E00B9EBC9 /* NSError+ParseErrorCodes.m */; };
+		4C12992516FC043100B9EBC9 /* exclamation.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C12992316FC043100B9EBC9 /* exclamation.png */; };
+		4C12992616FC043100B9EBC9 /* exclamation@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C12992416FC043100B9EBC9 /* exclamation@2x.png */; };
 		4C4CF5721675A3E90000C290 /* ParseCenter.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C4CF5711675A3E90000C290 /* ParseCenter.m */; };
 		4C4D65D916C5AC5C006217B4 /* fashion_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C4D65D816C5AC5C006217B4 /* fashion_icon.png */; };
 		4C4D65DC16C5AC73006217B4 /* finance_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 4C4D65DB16C5AC73006217B4 /* finance_icon.png */; };
@@ -133,6 +136,10 @@
 		4C0B9A431636621200EC7246 /* Security.framework */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		4C0B9A451636621A00EC7246 /* StoreKit.framework */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		4C0B9A471636622000EC7246 /* SystemConfiguration.framework */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		4C12992016FBFA5E00B9EBC9 /* NSError+ParseErrorCodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSError+ParseErrorCodes.h"; sourceTree = "<group>"; };
+		4C12992116FBFA5E00B9EBC9 /* NSError+ParseErrorCodes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSError+ParseErrorCodes.m"; sourceTree = "<group>"; };
+		4C12992316FC043100B9EBC9 /* exclamation.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = exclamation.png; sourceTree = "<group>"; };
+		4C12992416FC043100B9EBC9 /* exclamation@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "exclamation@2x.png"; sourceTree = "<group>"; };
 		4C4CF5701675A3E90000C290 /* ParseCenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParseCenter.h; sourceTree = "<group>"; };
 		4C4CF5711675A3E90000C290 /* ParseCenter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ParseCenter.m; sourceTree = "<group>"; };
 		4C4D65D816C5AC5C006217B4 /* fashion_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = fashion_icon.png; sourceTree = "<group>"; };
@@ -271,6 +278,8 @@
 				4C04BFD716A32A83000D7202 /* speech_bubble_icon@2x.png */,
 				4C04BFE416A62FD5000D7202 /* category_tab_bar_icon.png */,
 				4C04BFD916A332CA000D7202 /* category_tab_bar_icon@2x.png */,
+				4C12992316FC043100B9EBC9 /* exclamation.png */,
+				4C12992416FC043100B9EBC9 /* exclamation@2x.png */,
 			);
 			name = Icons;
 			sourceTree = "<group>";
@@ -342,6 +351,8 @@
 				4C4CF5711675A3E90000C290 /* ParseCenter.m */,
 				4CFE51CF16AE1192009B627C /* CBCommons.h */,
 				4CFE51D016AE1192009B627C /* CBCommons.m */,
+				4C12992016FBFA5E00B9EBC9 /* NSError+ParseErrorCodes.h */,
+				4C12992116FBFA5E00B9EBC9 /* NSError+ParseErrorCodes.m */,
 				4C6B6378167EC1E500539A8A /* Home */,
 				4C6B637D167EC27800539A8A /* Conversations */,
 				4C6B637E167EC28800539A8A /* Single Conversation */,
@@ -571,6 +582,8 @@
 				4C4D660216D00E5A006217B4 /* celebrities_icon.png in Resources */,
 				4C4D660416D011F2006217B4 /* politics_icon@2x.png in Resources */,
 				4C4D660616D0120C006217B4 /* politics_icon.png in Resources */,
+				4C12992516FC043100B9EBC9 /* exclamation.png in Resources */,
+				4C12992616FC043100B9EBC9 /* exclamation@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -616,6 +629,7 @@
 				4CFE51F316C4CBE3009B627C /* AuthenticationViewController.m in Sources */,
 				4CFE522816C586CD009B627C /* EditableCell.m in Sources */,
 				4CFE524016C5A48A009B627C /* CBMessage.m in Sources */,
+				4C12992216FBFA5E00B9EBC9 /* NSError+ParseErrorCodes.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
