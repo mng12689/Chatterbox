@@ -106,4 +106,15 @@
     }];
 }
 
++ (void)lastMessageForConversation:(PFObject*)conversation cachePolicy:(PFCachePolicy)cachePolicy block:(void(^)(PFObject *object, NSError *error))block
+{
+    PFQuery *query = [PFQuery queryWithClassName:ParseMessageClassKey];
+    [query whereKey:ParseMessageConversationKey equalTo:conversation];
+    query.cachePolicy = cachePolicy;
+    [query orderByDescending:ParseObjectUpdatedAtKey];
+    [query getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+        block(object,error);
+    }];
+}
+
 @end

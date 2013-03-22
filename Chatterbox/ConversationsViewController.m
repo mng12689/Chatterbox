@@ -249,7 +249,6 @@
         if ([[obj objectId]isEqualToString:conversation.objectId]) {
             return YES;
             *stop = YES;
-            NSLog(@"equal");
         }
         return NO;
     }];
@@ -296,13 +295,9 @@
     cell.statusLabel.text = [[conversation valueForKey:ParseConversationStatusKey]capitalizedString];
     cell.messageLabel.text = @"";
     
-    PFQuery *query = [PFQuery queryWithClassName:ParseMessageClassKey];
-    [query whereKey:ParseMessageConversationKey equalTo:conversation];
-    query.cachePolicy = self.lastMessageCachePolicy;
-    [query orderByDescending:ParseObjectUpdatedAtKey];
-    [query getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+    [ParseCenter lastMessageForConversation:conversation cachePolicy:self.lastMessageCachePolicy block:^(PFObject *object, NSError *error){
         NSString *text = [object valueForKey:ParseMessageTextKey];
-        cell.messageLabel.text = text ? text : @"(No messages yet)";
+        cell.messageLabel.text = text ? : @"(No messages yet)";
     }];
     
     return cell;
@@ -318,13 +313,6 @@
     return [self.topics objectAtIndex:section];
 }
 
-/*-(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
-{
-    TopicsHeaderView *headerView = [[TopicsHeaderView alloc]initWithFrame:CGRectMake(0, 0, 320, 20)];
-    headerView.label.text = [self.topics objectAtIndex:section];
-    return headerView;
-}*/
-
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     return [[self.conversationsByTopic valueForKey:[self.topics objectAtIndex:section]] count];
@@ -339,7 +327,7 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {    
     NSString *topic = [self.topics objectAtIndex:indexPath.section];
-    CBConversation *conversation = [[self.conversationsByTopic valueForKey:topic] objectAtIndex:indexPath.row];
+    PFObject *conversation = [[self.conversationsByTopic valueForKey:topic] objectAtIndex:indexPath.row];
     
     TestViewController *dialogueViewController = [[TestViewController alloc]initWithConversation:conversation];
     [self.navigationController pushViewController:dialogueViewController animated:YES];
