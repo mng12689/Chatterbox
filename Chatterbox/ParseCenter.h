@@ -23,7 +23,7 @@
 
 //manage messages methods
 + (void)loadMessageWithObjectId:(NSString*)objectId cachePolicy:(PFCachePolicy)cachePolicy handler:(void(^)(PFObject *object, NSError *error))handler;
-+ (void)loadMessagesFromConversation:(PFObject*)conversation afterDate:(NSDate*)date cachePolicy:(PFCachePolicy)cachePolicy handler:(void(^)(NSArray *objects, NSError *error))handler;
++ (PFQuery*)loadMessagesFromConversation:(PFObject*)conversation afterDate:(NSDate*)date cachePolicy:(PFCachePolicy)cachePolicy handler:(void(^)(NSArray *objects, NSError *error))handler;
 + (void)sendMessage:(PFObject*)message conversation:(PFObject*)conversation block:(void(^)(BOOL succeeded, NSError *error))block;
 
 @end

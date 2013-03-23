@@ -12,5 +12,6 @@
 
 @property (strong, nonatomic) UILabel *statusLabel;
 @property (strong, nonatomic) UILabel *messageLabel;
+- (void)setMessageText:(NSString*)text;
 
 @end

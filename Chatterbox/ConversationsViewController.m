@@ -279,7 +279,8 @@
     PFObject *conversation = [[self.conversationsByTopic valueForKey:topic] objectAtIndex:indexPath.row];
     
     cell.statusLabel.text = [[conversation valueForKey:ParseConversationStatusKey]capitalizedString];
-    cell.messageLabel.text = [[conversation objectForKey:ParseConversationLastMessageKey] objectForKey:ParseMessageTextKey] ? : @"(No messages yet)";
+    NSString *messageText = [[conversation objectForKey:ParseConversationLastMessageKey] objectForKey:ParseMessageTextKey] ? : @"(No messages yet)";
+    [cell setMessageText:messageText];
     
     return cell;
 }

@@ -77,7 +77,7 @@
     }];
 }
 
-+ (void)loadMessagesFromConversation:(PFObject*)conversation afterDate:(NSDate*)date cachePolicy:(PFCachePolicy)cachePolicy handler:(void(^)(NSArray *objects, NSError *error))handler{
++ (PFQuery*)loadMessagesFromConversation:(PFObject*)conversation afterDate:(NSDate*)date cachePolicy:(PFCachePolicy)cachePolicy handler:(void(^)(NSArray *objects, NSError *error))handler{
     PFQuery *query = [[conversation relationforKey:ParseConversationMessagesKey]query];
     query.cachePolicy = cachePolicy;
     if (date) {
@@ -88,6 +88,7 @@
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         handler(objects,error);
     }];
+    return query;
 }
 
 + (void)sendMessage:(PFObject*)message conversation:(PFObject*)conversation block:(void(^)(BOOL succeeded, NSError *error))block

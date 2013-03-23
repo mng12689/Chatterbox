@@ -31,6 +31,7 @@
 @property (strong, nonatomic) NSMutableArray *messages;
 
 @property (strong, nonatomic) NSMutableArray *observers;
+@property (strong, nonatomic) PFQuery *activeQuery;
 
 @end
 
@@ -69,7 +70,6 @@
     self.growingTextView.userInteractionEnabled = YES;
     self.growingTextView.minNumberOfLines = 1;
     self.growingTextView.maxNumberOfLines = 5;
-    //self.growingTextView.returnKeyType = UIReturnKeySend;
     self.growingTextView.internalTextView.scrollIndicatorInsets = UIEdgeInsetsMake(0, 5, 0, 5);
     self.growingTextView.delegate = self;
     self.growingTextView.clipsToBounds = YES;
@@ -78,7 +78,6 @@
     self.growingTextView.layer.borderColor = [[UIColor grayColor]CGColor];
     self.growingTextView.layer.borderWidth = 1.0;
     self.growingTextView.userInteractionEnabled = YES;
-    //self.growingTextView.internalTextView.returnKeyType = UIReturnKeySend;
     [self.containerView addSubview:self.growingTextView];
     
     self.sendButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -136,7 +135,8 @@
 -(void)viewWillAppear:(BOOL)animated
 {
     __weak TestViewController *currentVC = self;
-    [ParseCenter loadMessagesFromConversation:self.conversation afterDate:nil cachePolicy:kPFCachePolicyCacheThenNetwork handler:^(NSArray *objects, NSError *error) {
+    self.activeQuery = [ParseCenter loadMessagesFromConversation:self.conversation afterDate:nil cachePolicy:kPFCachePolicyCacheThenNetwork handler:^(NSArray *objects, NSError *error) {
+        currentVC.activeQuery = nil;
         if (!error) {
             currentVC.messages = [NSMutableArray arrayWithArray:objects];
             [currentVC.table reloadData];
@@ -157,14 +157,16 @@
                                                object:nil];
     
     [self.observers addObject:[[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeAPNNewMessage object:[[UIApplication sharedApplication]delegate] queue:nil usingBlock:^(NSNotification *note) {
-        NSDate *lastMessageDate = [[currentVC.messages lastObject] valueForKey:ParseObjectUpdatedAtKey];
-        [ParseCenter loadMessagesFromConversation:currentVC.conversation afterDate:lastMessageDate cachePolicy:kPFCachePolicyNetworkElseCache handler:^(NSArray *objects, NSError *error) {
-            [currentVC.messages addObjectsFromArray:objects];
-            [currentVC.table reloadData];
-            if (currentVC.messages.count) {
-                [currentVC.table scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:currentVC.messages.count-1 inSection:0] atScrollPosition:UITableViewRowAnimationTop animated:YES];
-            }
-        }];
+        if (!self.activeQuery) {
+            NSDate *lastMessageDate = [[currentVC.messages lastObject] valueForKey:ParseObjectUpdatedAtKey];
+            [ParseCenter loadMessagesFromConversation:currentVC.conversation afterDate:lastMessageDate cachePolicy:kPFCachePolicyNetworkElseCache handler:^(NSArray *objects, NSError *error) {
+                [currentVC.messages addObjectsFromArray:objects];
+                [currentVC.table reloadData];
+                if (currentVC.messages.count) {
+                    [currentVC.table scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:currentVC.messages.count-1 inSection:0] atScrollPosition:UITableViewRowAnimationTop animated:YES];
+                }
+            }];
+        }
     }]];
     [self.observers addObject:[[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeAPNActiveConvo object:[[UIApplication sharedApplication]delegate] queue:nil usingBlock:^(NSNotification *note) {
         if ([[note.userInfo valueForKey:CBNotificationKeyConvoId]isEqualToString:currentVC.conversation.objectId]) {
