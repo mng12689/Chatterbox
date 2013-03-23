@@ -22,7 +22,8 @@
 
 @interface ConversationsViewController () <UITableViewDataSource, UITableViewDelegate>
 
-@property (weak, nonatomic) IBOutlet UITableView *table;
+@property (strong, nonatomic) UITableView *table;
+@property (strong, nonatomic) UIScrollView *underlyingScrollView;
 @property (strong, nonatomic) NSMutableArray *observers;
 
 @property (strong, nonatomic) NSMutableArray *conversations;
@@ -34,9 +35,9 @@
 
 @implementation ConversationsViewController
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+- (id)init
 {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    self = [super init];
     if (self){
         self.title = NSLocalizedString(@"Conversations",@"title for view controller");
         __weak ConversationsViewController *currentVC = self;
@@ -140,12 +141,22 @@
     UIBarButtonItem *settingsBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:title style:UIBarButtonItemStylePlain target:self action:@selector(settingsClicked:)];
     self.navigationItem.rightBarButtonItem = settingsBarButtonItem;
     
+    self.underlyingScrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+    self.underlyingScrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
+    self.underlyingScrollView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_paper_bg"]];
+    self.underlyingScrollView.showsVerticalScrollIndicator = NO;
+    [self.view addSubview:self.underlyingScrollView];
+
+    self.table = [[UITableView alloc]initWithFrame:CGRectMake(0, self.navigationController.navigationBar.frame.size.height, self.view.frame.size.width, self.view.frame.size.height-self.navigationController.navigationBar.frame.size.height)];
     self.table.dataSource = self;
     self.table.delegate = self;
     self.table.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_paper_bg"]];
-    UIView *clearView = [[UIView alloc]initWithFrame:self.navigationController.navigationBar.frame];
+    self.table.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
+    self.table.showsVerticalScrollIndicator = NO;
+    [self.view addSubview:self.table];
+    /*UIView *clearView = [[UIView alloc]initWithFrame:self.navigationController.navigationBar.frame];
     clearView.backgroundColor = [UIColor clearColor];
-    self.table.tableHeaderView = clearView;
+    self.table.tableHeaderView = clearView;*/
 
     UILabel *navBarLabel = [CBCommons standardNavBarLabel];
     navBarLabel.text = NSLocalizedString(self.title, @"title for nav bar");
@@ -350,6 +361,13 @@
         }];
         [alert setCancelButtonWithTitle:@"Cancel" handler:^{}];
         [alert show];
+    }
+}
+
+-(void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    if (scrollView == self.table) {
+        self.underlyingScrollView.contentOffset = self.table.contentOffset;
     }
 }
 

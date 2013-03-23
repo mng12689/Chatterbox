@@ -24,6 +24,7 @@
 
 @property (strong, nonatomic) UITableView *table;
 @property (strong, nonatomic) UIImageView *containerView;
+@property (strong, nonatomic) UIScrollView *underlyingScrollView;
 @property (strong, nonatomic) UIButton *sendButton;
 @property (strong, nonatomic) HPGrowingTextView *growingTextView;
 
@@ -96,21 +97,31 @@
     [self.sendButton addTarget:self action:@selector(createMessageAndSend) forControlEvents:UIControlEventTouchUpInside];
     [self.containerView addSubview:self.sendButton];
     
-    self.table = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-self.containerView.frame.size.height)];
+    /*UIView *clearView = [[UIView alloc]initWithFrame:self.navigationController.navigationBar.frame];
+    clearView.backgroundColor = [UIColor clearColor];
+    [clearView.layer setShadowOffset:CGSizeMake(0, 1)];
+    [clearView.layer setShadowColor:[[UIColor blackColor]CGColor]];
+    [clearView.layer setShadowOpacity:.5];*/
+
+    self.underlyingScrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-self.containerView.frame.size.height)];
+    self.underlyingScrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
+    self.underlyingScrollView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_paper_bg"]];
+    self.underlyingScrollView.showsVerticalScrollIndicator = NO;
+    [self.view addSubview:self.underlyingScrollView];
+    
+    self.table = [[UITableView alloc]initWithFrame:CGRectMake(0,
+                                                              self.navigationController.navigationBar.frame.size.height,
+                                                              self.view.frame.size.width,
+                                                              self.view.frame.size.height-self.containerView.frame.size.height-self.navigationController.navigationBar.frame.size.height)];
     self.table.dataSource = self;
     self.table.delegate = self;
     self.table.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.table.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
+    self.table.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     self.table.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"white_paper_bg"]];
     self.table.showsVerticalScrollIndicator = NO;
     self.table.tableFooterView = [self tableFooterView];
     
-    UIView *clearView = [[UIView alloc]initWithFrame:self.navigationController.navigationBar.frame];
-    clearView.backgroundColor = [UIColor clearColor];
-    [clearView.layer setShadowOffset:CGSizeMake(0, 1)];
-    [clearView.layer setShadowColor:[[UIColor blackColor]CGColor]];
-    [clearView.layer setShadowOpacity:.5];
-    self.table.tableHeaderView = clearView;
+    //self.table.tableHeaderView = clearView;
 
     [self.view addSubview:self.table];
     [self.view addSubview:self.containerView];
@@ -387,6 +398,13 @@
         [self.table scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewRowAnimationTop animated:NO];
     }
 }*/
+
+-(void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    if (scrollView == self.table) {
+        self.underlyingScrollView.contentOffset = self.table.contentOffset;
+    }
+}
 
 #pragma mark - HPGrowingTextView delegate methods
 

@@ -71,7 +71,6 @@
 		4CDAB5091637328500E57A7D /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CDAB5081637328500E57A7D /* Social.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		4CDAB50E1637398300E57A7D /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4CDAB50D1637398300E57A7D /* Default-568h@2x.png */; };
 		4CDAB5121637C97500E57A7D /* ConversationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CDAB5101637C97500E57A7D /* ConversationsViewController.m */; };
-		4CDAB5131637C97500E57A7D /* ConversationsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4CDAB5111637C97500E57A7D /* ConversationsViewController.xib */; };
 		4CEC72ED1659778200B37117 /* CBConversation.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CEC72EC1659778200B37117 /* CBConversation.m */; };
 		4CEC72F016597E4100B37117 /* ChatterboxDataStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CEC72EF16597E4100B37117 /* ChatterboxDataStore.m */; };
 		4CEC730216602DD200B37117 /* DialogueViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CEC730116602DD200B37117 /* DialogueViewController.m */; };
@@ -168,7 +167,6 @@
 		4CDAB50D1637398300E57A7D /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		4CDAB50F1637C97500E57A7D /* ConversationsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConversationsViewController.h; sourceTree = "<group>"; };
 		4CDAB5101637C97500E57A7D /* ConversationsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConversationsViewController.m; sourceTree = "<group>"; };
-		4CDAB5111637C97500E57A7D /* ConversationsViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ConversationsViewController.xib; sourceTree = "<group>"; };
 		4CEC72EB1659778200B37117 /* CBConversation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBConversation.h; sourceTree = "<group>"; };
 		4CEC72EC1659778200B37117 /* CBConversation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBConversation.m; sourceTree = "<group>"; };
 		4CEC72EE16597E4100B37117 /* ChatterboxDataStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChatterboxDataStore.h; sourceTree = "<group>"; };
@@ -412,7 +410,6 @@
 			children = (
 				4CDAB50F1637C97500E57A7D /* ConversationsViewController.h */,
 				4CDAB5101637C97500E57A7D /* ConversationsViewController.m */,
-				4CDAB5111637C97500E57A7D /* ConversationsViewController.xib */,
 				4C6B63831681705600539A8A /* LastMessageCell.h */,
 				4C6B63841681705600539A8A /* LastMessageCell.m */,
 			);
@@ -528,7 +525,6 @@
 			files = (
 				4C0B9A1A1636477000EC7246 /* InfoPlist.strings in Resources */,
 				4CDAB50E1637398300E57A7D /* Default-568h@2x.png in Resources */,
-				4CDAB5131637C97500E57A7D /* ConversationsViewController.xib in Resources */,
 				4C04BFC816913502000D7202 /* send_message_bar@2x.png in Resources */,
 				4C04BFD2169BD6EF000D7202 /* white_paper_bg@2x.png in Resources */,
 				4C04BFD616A1E148000D7202 /* category_glass_button@2x.png in Resources */,
