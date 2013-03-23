@@ -185,6 +185,9 @@
             currentVC.table.tableFooterView = [currentVC tableFooterView];
             [currentVC.conversation refreshInBackgroundWithBlock:^(PFObject *object, NSError *error) {
                 currentVC.navigationItem.rightBarButtonItem = nil;
+                if (currentVC.messages.count) {
+                    [currentVC.table scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:currentVC.messages.count-1 inSection:0] atScrollPosition:UITableViewRowAnimationTop animated:YES];
+                }
             }];
         }
     }]];
@@ -311,8 +314,9 @@
                 [SVProgressHUD showSuccessWithStatus:@"Conversation ended"];
                 weakSelf.table.tableFooterView = [self tableFooterView];
                 weakSelf.navigationItem.rightBarButtonItem = nil;
-                [weakSelf.table reloadData];
-                
+                if (weakSelf.messages.count) {
+                    [weakSelf.table scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:weakSelf.messages.count-1 inSection:0] atScrollPosition:UITableViewRowAnimationTop animated:YES];
+                }
                 [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeEndedConvo object:weakSelf userInfo:[NSDictionary dictionaryWithObject:weakSelf.conversation forKey:CBNotificationKeyConvoObj]];
                 NSDictionary *dataDictionary = [NSDictionary dictionaryWithObjects:@[@(CBAPNTypeConversationEnded),weakSelf.conversation.objectId,@"Increment"]
                                                                            forKeys:@[CBAPNTypeKey,CBAPNConvoIDKey,CBAPNBadgeKey]];
