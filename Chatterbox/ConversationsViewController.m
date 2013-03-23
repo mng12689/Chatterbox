@@ -13,7 +13,6 @@
 #import "LastMessageCell.h"
 #import <QuartzCore/QuartzCore.h>
 #import "CBCommons.h"
-#import "TopicsHeaderView.h"
 #import "BlocksKit.h"
 #import "ParseCenter.h"
 #import "AuthenticationViewController.h"
@@ -28,9 +27,8 @@
 
 @property (strong, nonatomic) NSMutableArray *conversations;
 @property (strong, nonatomic) NSDictionary *conversationsByTopic;
+@property (strong, nonatomic) NSMutableArray *lastMessages;
 @property (strong, nonatomic) NSArray *topics;
-
-@property (assign, nonatomic) PFCachePolicy lastMessageCachePolicy;
 
 @end
 
@@ -41,7 +39,6 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self){
         self.title = NSLocalizedString(@"Conversations",@"title for view controller");
-        self.lastMessageCachePolicy = kPFCachePolicyCacheElseNetwork;
         __weak ConversationsViewController *currentVC = self;
         
         // user actions
@@ -54,56 +51,51 @@
         [self.observers addObject:[[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeNewMessage object:nil queue:nil usingBlock:^(NSNotification *note) {
             if ([note.object isKindOfClass:[TestViewController class]]) {
                 PFObject *conversation = [[note userInfo]objectForKey:CBNotificationKeyConvoObj];
-                currentVC.lastMessageCachePolicy = kPFCachePolicyNetworkElseCache;
                 [currentVC.table beginUpdates];
                 [currentVC.table reloadRowsAtIndexPaths:@[[currentVC indexPathForConversation:conversation]] withRowAnimation:UITableViewRowAnimationNone];
                 [currentVC.table endUpdates];
-                currentVC.lastMessageCachePolicy = kPFCachePolicyCacheElseNetwork;
             }
         }]];
         [self.observers addObject:[[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeEndedConvo object:nil queue:nil usingBlock:^(NSNotification *note) {
             PFObject *conversation = [[note userInfo]objectForKey:CBNotificationKeyConvoObj];
-            currentVC.lastMessageCachePolicy = kPFCachePolicyNetworkElseCache;
             [currentVC.table beginUpdates];
             [currentVC.table reloadRowsAtIndexPaths:@[[currentVC indexPathForConversation:conversation]] withRowAnimation:UITableViewRowAnimationNone];
             [currentVC.table endUpdates];
-            currentVC.lastMessageCachePolicy = kPFCachePolicyCacheElseNetwork;
         }]];
         
         //other user actions (APN notifications)
         [self.observers addObject:[[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeAPNActiveConvo object:nil queue:nil usingBlock:^(NSNotification *note) {
             NSString *conversationID = [[note userInfo]objectForKey:CBNotificationKeyConvoId];
-            NSIndexPath *indexPath = [currentVC indexPathForConversationWithObjectId:conversationID];
-            NSString *topic = [self.topics objectAtIndex:indexPath.section];
-            PFObject *convoObj = [currentVC.conversationsByTopic objectForKey:topic][indexPath.row];
-            [convoObj refreshInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+            [ParseCenter loadConversationWithObjectId:conversationID cachePolicy:kPFCachePolicyNetworkOnly handler:^(PFObject *object, NSError *error) {
                 if (!error) {
-                    [currentVC loadDataSourceWithConversations:currentVC.conversations];
+                    [self updateConversationsArrayWithConversation:object];
+                    [self loadDataSourceWithConversations:self.conversations];
                     [currentVC.table beginUpdates];
-                    [currentVC.table reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationAutomatic];
+                    [currentVC.table reloadRowsAtIndexPaths:@[[currentVC indexPathForConversationWithObjectId:conversationID]] withRowAnimation:UITableViewRowAnimationAutomatic];
                     [currentVC.table endUpdates];
-                    currentVC.lastMessageCachePolicy = kPFCachePolicyCacheElseNetwork;
                 }
             }];
         }]];
         [self.observers addObject:[[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeAPNNewMessage object:nil queue:nil usingBlock:^(NSNotification *note) {
             NSString *conversationID = [[note userInfo]objectForKey:CBNotificationKeyConvoId];
-            currentVC.lastMessageCachePolicy = kPFCachePolicyNetworkElseCache;
-            [currentVC.table beginUpdates];
-            [currentVC.table reloadRowsAtIndexPaths:@[[currentVC indexPathForConversationWithObjectId:conversationID]] withRowAnimation:UITableViewRowAnimationAutomatic];
-            [currentVC.table endUpdates];
-            currentVC.lastMessageCachePolicy = kPFCachePolicyCacheElseNetwork;
+            [ParseCenter loadConversationWithObjectId:conversationID cachePolicy:kPFCachePolicyNetworkOnly handler:^(PFObject *object, NSError *error) {
+                if (!error) {
+                    [self updateConversationsArrayWithConversation:object];
+                    [self loadDataSourceWithConversations:self.conversations];
+                    [currentVC.table beginUpdates];
+                    [currentVC.table reloadRowsAtIndexPaths:@[[currentVC indexPathForConversationWithObjectId:conversationID]] withRowAnimation:UITableViewRowAnimationAutomatic];
+                    [currentVC.table endUpdates];
+                }
+            }];
         }]];
         [self.observers addObject:[[NSNotificationCenter defaultCenter] addObserverForName:CBNotificationTypeAPNEndedConvo object:nil queue:nil usingBlock:^(NSNotification *note) {
             NSString *conversationID = [[note userInfo]objectForKey:CBNotificationKeyConvoId];
-            NSIndexPath *indexPath = [currentVC indexPathForConversationWithObjectId:conversationID];
-            NSString *topic = [self.topics objectAtIndex:indexPath.section];
-            PFObject *convoObj = [currentVC.conversationsByTopic objectForKey:topic][indexPath.row];
-            [convoObj refreshInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+            [ParseCenter loadConversationWithObjectId:conversationID cachePolicy:kPFCachePolicyNetworkOnly handler:^(PFObject *object, NSError *error) {
                 if (!error) {
-                    [currentVC loadDataSourceWithConversations:currentVC.conversations];
+                    [self updateConversationsArrayWithConversation:object];
+                    [self loadDataSourceWithConversations:self.conversations];
                     [currentVC.table beginUpdates];
-                    [currentVC.table reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationAutomatic];
+                    [currentVC.table reloadRowsAtIndexPaths:@[[currentVC indexPathForConversationWithObjectId:conversationID]] withRowAnimation:UITableViewRowAnimationAutomatic];
                     [currentVC.table endUpdates];
                 }
             }];
@@ -155,16 +147,10 @@
     clearView.backgroundColor = [UIColor clearColor];
     self.table.tableHeaderView = clearView;
 
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
-    label.backgroundColor = [UIColor clearColor];
-    label.font = [UIFont fontWithName:@"Cochin" size:24.0];
-    label.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
-    label.shadowOffset = CGSizeMake(0, 1);
-    label.textAlignment = UITextAlignmentCenter;
-    label.textColor = [UIColor lightGrayColor]; 
-    self.navigationItem.titleView = label;
-    label.text = NSLocalizedString(self.title, @"title for nav bar");
-    [label sizeToFit];    
+    UILabel *navBarLabel = [CBCommons standardNavBarLabel];
+    navBarLabel.text = NSLocalizedString(self.title, @"title for nav bar");
+    [navBarLabel sizeToFit];
+    self.navigationItem.titleView = navBarLabel;
 }
 
 -(void)viewWillAppear:(BOOL)animated
@@ -293,12 +279,7 @@
     PFObject *conversation = [[self.conversationsByTopic valueForKey:topic] objectAtIndex:indexPath.row];
     
     cell.statusLabel.text = [[conversation valueForKey:ParseConversationStatusKey]capitalizedString];
-    cell.messageLabel.text = @"";
-    
-    [ParseCenter lastMessageForConversation:conversation cachePolicy:self.lastMessageCachePolicy block:^(PFObject *object, NSError *error){
-        NSString *text = [object valueForKey:ParseMessageTextKey];
-        cell.messageLabel.text = text ? : @"(No messages yet)";
-    }];
+    cell.messageLabel.text = [[conversation objectForKey:ParseConversationLastMessageKey] objectForKey:ParseMessageTextKey] ? : @"(No messages yet)";
     
     return cell;
 }

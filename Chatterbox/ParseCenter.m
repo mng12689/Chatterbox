@@ -12,19 +12,52 @@
 
 @implementation ParseCenter
 
-+ (void)loadConversationWithObjectId:(NSString*)objectId cachePolicy:(PFCachePolicy)cachePolicy handler:(void(^)(PFObject *object, NSError *error))handler{
-    PFQuery *query = [PFQuery queryWithClassName:ParseConversationClassKey];
-    query.cachePolicy = cachePolicy;
-    [query getObjectInBackgroundWithId:objectId block:^(PFObject *object, NSError *error) {
-        handler(object,error);
+#pragma mark - authentication methods
++ (void)signUpWithUsernameInBackground:(NSString*)username password:(NSString*)password block:(void(^)(PFUser *user, NSError *error))block
+{
+    PFUser *user = [PFUser user];
+    user.username = username;
+    user.password = password;
+    [user signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+        block(user,error);
+    }];
+    
+}
+
++ (void)logInWithUsernameInBackground:(NSString*)username password:(NSString*)password block:(void(^)(PFUser *user, NSError *error))block
+{
+    [PFUser logInWithUsernameInBackground:username password:password block:^(PFUser *user, NSError *error){
+        block(user,error);
     }];
 }
 
++ (void)logout
+{
+    [PFUser logOut];
+    [PFQuery clearAllCachedResults];
+    [PFPush unsubscribeFromChannelInBackground:[NSString stringWithFormat:@"U%@",[PFUser currentUser].objectId] block:^(BOOL succeeded, NSError *error) {
+        [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeLogout object:self];
+        [SVProgressHUD showSuccessWithStatus:@"Logged Out"];
+    }];
+}
+
+#pragma mark - conversation related methods
 + (void)loadAllUserConversationsWithCachePolicy:(PFCachePolicy)cachePolicy handler:(void(^)(NSArray *objects, NSError *error))handler{
     PFQuery *query = [[[PFUser currentUser] relationforKey:ParseUserConversationsKey]query];
+    [query includeKey:ParseConversationLastMessageKey];
     query.cachePolicy = cachePolicy;
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         handler(objects,error);
+    }];
+}
+
++ (void)loadConversationWithObjectId:(NSString *)objectId cachePolicy:(PFCachePolicy)cachePolicy handler:(void (^)(PFObject *, NSError *))handler
+{
+    PFQuery *query = [PFQuery queryWithClassName:ParseConversationClassKey];
+    query.cachePolicy = cachePolicy;
+    [query includeKey:ParseConversationLastMessageKey];
+    [query getObjectInBackgroundWithId:objectId block:^(PFObject *object, NSError *error) {
+        handler(object,error);
     }];
 }
 
@@ -35,6 +68,7 @@
     }];
 }
 
+#pragma mark - messages related methods
 + (void)loadMessageWithObjectId:(NSString*)objectId cachePolicy:(PFCachePolicy)cachePolicy handler:(void(^)(PFObject *object, NSError *error))handler{
     PFQuery *query = [PFQuery queryWithClassName:ParseMessageClassKey];
     query.cachePolicy = cachePolicy;
@@ -53,34 +87,6 @@
     [query setLimit:40];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         handler(objects,error);
-    }];
-}
-
-+ (void)signUpWithUsernameInBackground:(NSString*)username password:(NSString*)password block:(void(^)(PFUser *user, NSError *error))block
-{
-    PFUser *user = [PFUser user];
-    user.username = username;
-    user.password = password;
-    [user signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-        block(user,error);
-    }];
-
-}
-
-+ (void)logInWithUsernameInBackground:(NSString*)username password:(NSString*)password block:(void(^)(PFUser *user, NSError *error))block
-{
-    [PFUser logInWithUsernameInBackground:username password:password block:^(PFUser *user, NSError *error){
-        block(user,error);
-    }];
-}
-
-+ (void)logout
-{
-    [PFUser logOut];
-    [PFQuery clearAllCachedResults];
-    [PFPush unsubscribeFromChannelInBackground:[NSString stringWithFormat:@"U%@",[PFUser currentUser].objectId] block:^(BOOL succeeded, NSError *error) {
-        [[NSNotificationCenter defaultCenter]postNotificationName:CBNotificationTypeLogout object:self];
-        [SVProgressHUD showSuccessWithStatus:@"Logged Out"];
     }];
 }
 
@@ -103,17 +109,6 @@
             }];
         }
         block(succeeded,error);
-    }];
-}
-
-+ (void)lastMessageForConversation:(PFObject*)conversation cachePolicy:(PFCachePolicy)cachePolicy block:(void(^)(PFObject *object, NSError *error))block
-{
-    PFQuery *query = [PFQuery queryWithClassName:ParseMessageClassKey];
-    [query whereKey:ParseMessageConversationKey equalTo:conversation];
-    query.cachePolicy = cachePolicy;
-    [query orderByDescending:ParseObjectUpdatedAtKey];
-    [query getFirstObjectInBackgroundWithBlock:^(PFObject *object, NSError *error) {
-        block(object,error);
     }];
 }
 

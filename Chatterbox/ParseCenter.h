@@ -17,10 +17,9 @@
 + (void)logout;
 
 //manage conversations methods
-+ (void)loadConversationWithObjectId:(NSString*)objectId cachePolicy:(PFCachePolicy)cachePolicy handler:(void(^)(PFObject *object, NSError *error))handler;
 + (void)loadAllUserConversationsWithCachePolicy:(PFCachePolicy)cachePolicy handler:(void(^)(NSArray *objects, NSError *error))handler;
++ (void)loadConversationWithObjectId:(NSString *)objectId cachePolicy:(PFCachePolicy)cachePolicy handler:(void (^)(PFObject *, NSError *))handler;
 + (void)endConversation:(PFObject*)conversation handler:(void(^)(BOOL succeeded, NSError *error))handler;
-+ (void)lastMessageForConversation:(PFObject*)conversation cachePolicy:(PFCachePolicy)cachePolicy block:(void(^)(PFObject *object, NSError *error))block;
 
 //manage messages methods
 + (void)loadMessageWithObjectId:(NSString*)objectId cachePolicy:(PFCachePolicy)cachePolicy handler:(void(^)(PFObject *object, NSError *error))handler;

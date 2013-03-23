@@ -94,7 +94,7 @@
                                        self.growingTextView.frame.size.height);
     self.sendButton.userInteractionEnabled = YES;
     [self.sendButton setEnabled:NO];
-    [self.sendButton addTarget:self action:@selector(sendNewMessage) forControlEvents:UIControlEventTouchUpInside];
+    [self.sendButton addTarget:self action:@selector(createMessageAndSend) forControlEvents:UIControlEventTouchUpInside];
     [self.containerView addSubview:self.sendButton];
     
     self.table = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-self.containerView.frame.size.height)];
@@ -116,16 +116,10 @@
     [self.view addSubview:self.table];
     [self.view addSubview:self.containerView];
     
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
-    label.backgroundColor = [UIColor clearColor];
-    label.font = [UIFont fontWithName:@"Cochin" size:24.0];
-    label.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
-    label.shadowOffset = CGSizeMake(0, 1);
-    label.textAlignment = UITextAlignmentCenter;
-    label.textColor = [UIColor lightGrayColor]; 
-    self.navigationItem.titleView = label;
-    label.text = NSLocalizedString(self.title, @"title for nav bar");
-    [label sizeToFit];
+    UILabel *navBarLabel = [CBCommons standardNavBarLabel];
+    navBarLabel.text = NSLocalizedString(self.title, @"title for nav bar");
+    [navBarLabel sizeToFit];
+    self.navigationItem.titleView = navBarLabel;
     
     if ([[self.conversation valueForKey:ParseConversationStatusKey]isEqualToString:ParseConversationStatusActive]) {
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"End" style:UIBarButtonItemStylePlain target:self action:@selector(endConversation)];
@@ -217,7 +211,7 @@
     return _messages;
 }
 
-- (void)sendNewMessage
+- (void)createMessageAndSend
 {
     if ([[self.conversation valueForKey:ParseConversationStatusKey] isEqualToString:ParseConversationStatusActive]) {
         PFObject *PFMessage = [PFObject objectWithClassName:ParseMessageClassKey];
@@ -255,6 +249,7 @@
              if (succeeded){
                  PFRelation *relation = [self.conversation relationforKey:ParseConversationMessagesKey];
                  [relation addObject:PFMessage];
+                 [currentVC.conversation setObject:PFMessage forKey:ParseConversationLastMessageKey];
                  [currentVC.conversation saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                      if (succeeded) {
                          NSDictionary *dataDictionary = [NSDictionary dictionaryWithObjects:@[@(CBAPNTypeNewMessage),currentVC.conversation.objectId,@"Increment"]
@@ -368,7 +363,7 @@
 {
     NSString *status = [self.conversation objectForKey:ParseConversationStatusKey];
     if ([status isEqualToString:ParseConversationStatusEnded]) {
-        UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, self.table.frame.size.width, 20)];
+        UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, self.table.frame.size.width, 40)];
         label.backgroundColor = [UIColor clearColor];
         label.font = [UIFont boldSystemFontOfSize:14];
         label.textAlignment = NSTextAlignmentCenter;

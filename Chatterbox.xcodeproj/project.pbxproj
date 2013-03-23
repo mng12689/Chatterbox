@@ -72,14 +72,12 @@
 		4CDAB50E1637398300E57A7D /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4CDAB50D1637398300E57A7D /* Default-568h@2x.png */; };
 		4CDAB5121637C97500E57A7D /* ConversationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CDAB5101637C97500E57A7D /* ConversationsViewController.m */; };
 		4CDAB5131637C97500E57A7D /* ConversationsViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4CDAB5111637C97500E57A7D /* ConversationsViewController.xib */; };
-		4CDAB5171638531500E57A7D /* SignUpOrLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CDAB5151638531500E57A7D /* SignUpOrLoginViewController.m */; };
 		4CEC72ED1659778200B37117 /* CBConversation.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CEC72EC1659778200B37117 /* CBConversation.m */; };
 		4CEC72F016597E4100B37117 /* ChatterboxDataStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CEC72EF16597E4100B37117 /* ChatterboxDataStore.m */; };
 		4CEC730216602DD200B37117 /* DialogueViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CEC730116602DD200B37117 /* DialogueViewController.m */; };
 		4CEC73051661CE4A00B37117 /* TestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CEC73041661CE4A00B37117 /* TestViewController.m */; };
 		4CFE51D116AE1192009B627C /* CBCommons.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CFE51D016AE1192009B627C /* CBCommons.m */; };
 		4CFE51D316C0A7C2009B627C /* speech_bubble_orange@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4CFE51D216C0A7C2009B627C /* speech_bubble_orange@2x.png */; };
-		4CFE51D816C0B042009B627C /* TopicsHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CFE51D716C0B042009B627C /* TopicsHeaderView.m */; };
 		4CFE51E916C4C3CA009B627C /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CFE51E816C4C3CA009B627C /* Parse.framework */; };
 		4CFE51F316C4CBE3009B627C /* AuthenticationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CFE51F216C4CBE3009B627C /* AuthenticationViewController.m */; };
 		4CFE51F716C55023009B627C /* news_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4CFE51F616C55023009B627C /* news_icon@2x.png */; };
@@ -171,8 +169,6 @@
 		4CDAB50F1637C97500E57A7D /* ConversationsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConversationsViewController.h; sourceTree = "<group>"; };
 		4CDAB5101637C97500E57A7D /* ConversationsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConversationsViewController.m; sourceTree = "<group>"; };
 		4CDAB5111637C97500E57A7D /* ConversationsViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ConversationsViewController.xib; sourceTree = "<group>"; };
-		4CDAB5141638531500E57A7D /* SignUpOrLoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SignUpOrLoginViewController.h; sourceTree = "<group>"; };
-		4CDAB5151638531500E57A7D /* SignUpOrLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SignUpOrLoginViewController.m; sourceTree = "<group>"; };
 		4CEC72EB1659778200B37117 /* CBConversation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBConversation.h; sourceTree = "<group>"; };
 		4CEC72EC1659778200B37117 /* CBConversation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBConversation.m; sourceTree = "<group>"; };
 		4CEC72EE16597E4100B37117 /* ChatterboxDataStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChatterboxDataStore.h; sourceTree = "<group>"; };
@@ -184,8 +180,6 @@
 		4CFE51CF16AE1192009B627C /* CBCommons.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBCommons.h; sourceTree = "<group>"; };
 		4CFE51D016AE1192009B627C /* CBCommons.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBCommons.m; sourceTree = "<group>"; };
 		4CFE51D216C0A7C2009B627C /* speech_bubble_orange@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "speech_bubble_orange@2x.png"; sourceTree = "<group>"; };
-		4CFE51D616C0B042009B627C /* TopicsHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TopicsHeaderView.h; sourceTree = "<group>"; };
-		4CFE51D716C0B042009B627C /* TopicsHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TopicsHeaderView.m; sourceTree = "<group>"; };
 		4CFE51E816C4C3CA009B627C /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Parse.framework; sourceTree = "<group>"; };
 		4CFE51F116C4CBE3009B627C /* AuthenticationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AuthenticationViewController.h; sourceTree = "<group>"; };
 		4CFE51F216C4CBE3009B627C /* AuthenticationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AuthenticationViewController.m; sourceTree = "<group>"; };
@@ -419,8 +413,6 @@
 				4CDAB50F1637C97500E57A7D /* ConversationsViewController.h */,
 				4CDAB5101637C97500E57A7D /* ConversationsViewController.m */,
 				4CDAB5111637C97500E57A7D /* ConversationsViewController.xib */,
-				4CFE51D616C0B042009B627C /* TopicsHeaderView.h */,
-				4CFE51D716C0B042009B627C /* TopicsHeaderView.m */,
 				4C6B63831681705600539A8A /* LastMessageCell.h */,
 				4C6B63841681705600539A8A /* LastMessageCell.m */,
 			);
@@ -443,8 +435,6 @@
 		4C6B637F167EC2A400539A8A /* Login */ = {
 			isa = PBXGroup;
 			children = (
-				4CDAB5141638531500E57A7D /* SignUpOrLoginViewController.h */,
-				4CDAB5151638531500E57A7D /* SignUpOrLoginViewController.m */,
 				4CFE51F116C4CBE3009B627C /* AuthenticationViewController.h */,
 				4CFE51F216C4CBE3009B627C /* AuthenticationViewController.m */,
 				4CFE522616C586CD009B627C /* EditableCell.h */,
@@ -616,7 +606,6 @@
 				4C0B9A231636477000EC7246 /* Chatterbox.xcdatamodeld in Sources */,
 				4C0B9A2B1636481A00EC7246 /* HomeViewController.m in Sources */,
 				4CDAB5121637C97500E57A7D /* ConversationsViewController.m in Sources */,
-				4CDAB5171638531500E57A7D /* SignUpOrLoginViewController.m in Sources */,
 				4CEC72ED1659778200B37117 /* CBConversation.m in Sources */,
 				4CEC72F016597E4100B37117 /* ChatterboxDataStore.m in Sources */,
 				4CEC730216602DD200B37117 /* DialogueViewController.m in Sources */,
@@ -625,7 +614,6 @@
 				4C6B6382167EC31800539A8A /* MessageCell.m in Sources */,
 				4C6B63851681705600539A8A /* LastMessageCell.m in Sources */,
 				4CFE51D116AE1192009B627C /* CBCommons.m in Sources */,
-				4CFE51D816C0B042009B627C /* TopicsHeaderView.m in Sources */,
 				4CFE51F316C4CBE3009B627C /* AuthenticationViewController.m in Sources */,
 				4CFE522816C586CD009B627C /* EditableCell.m in Sources */,
 				4CFE524016C5A48A009B627C /* CBMessage.m in Sources */,

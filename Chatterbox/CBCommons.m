@@ -38,6 +38,7 @@ NSString* const ParseConversationTopicKey = @"topic";
 NSString* const ParseConversationUser1Key = @"user1";
 NSString* const ParseConversationUser2Key = @"user2";
 NSString* const ParseConversationMessagesKey = @"messages";
+NSString* const ParseConversationLastMessageKey = @"lastMessage";
 
 NSString* const ParseConversationStatusPending = @"pending";
 NSString* const ParseConversationStatusActive = @"active";
@@ -56,6 +57,18 @@ NSString* const ParseUserConversationsKey = @"conversations";
 + (UIColor*)chatterboxOrange
 {
     return [UIColor colorWithRed:1 green:90.0/255.0 blue:0 alpha:1];
+}
+
++ (UILabel*)standardNavBarLabel
+{
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
+    label.backgroundColor = [UIColor clearColor];
+    label.font = [UIFont fontWithName:@"Cochin" size:24.0];
+    label.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
+    label.shadowOffset = CGSizeMake(0, 1);
+    label.textAlignment = UITextAlignmentCenter;
+    label.textColor = [UIColor lightGrayColor];
+    return label;
 }
 
 @end

@@ -31,17 +31,10 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         self.title = NSLocalizedString(@"Chattegories",@"title for view controller");
-        
-        UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
-        label.backgroundColor = [UIColor clearColor];
-        label.font = [UIFont fontWithName:@"Cochin" size:24.0];
-        label.shadowColor = [UIColor colorWithWhite:1.0 alpha:1.0];
-        label.shadowOffset = CGSizeMake(0, 1);
-        label.textAlignment = UITextAlignmentCenter;
-        label.textColor = [UIColor lightGrayColor]; 
-        self.navigationItem.titleView = label;
-        label.text = NSLocalizedString(self.title, @"title for nav bar");
-        [label sizeToFit];
+        UILabel *navBarLabel = [CBCommons standardNavBarLabel];
+        navBarLabel.text = NSLocalizedString(self.title, @"title for nav bar");
+        [navBarLabel sizeToFit];
+        self.navigationItem.titleView = navBarLabel;
     }
     return self;
 }

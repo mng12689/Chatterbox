@@ -41,6 +41,7 @@ extern NSString* const ParseConversationTopicKey;
 extern NSString* const ParseConversationUser1Key;
 extern NSString* const ParseConversationUser2Key;
 extern NSString* const ParseConversationMessagesKey;
+extern NSString* const ParseConversationLastMessageKey;
 
 extern NSString* const ParseConversationStatusPending;
 extern NSString* const ParseConversationStatusActive;
@@ -57,5 +58,6 @@ extern NSString* const ParseUserConversationsKey;
 @interface CBCommons : NSObject
 
 + (UIColor*)chatterboxOrange;
++ (UILabel*)standardNavBarLabel;
 
 @end
