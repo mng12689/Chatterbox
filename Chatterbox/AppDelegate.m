@@ -111,6 +111,8 @@
 {
     [PFPush handlePush:userInfo];
     [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+    [PFInstallation currentInstallation].badge = 0;
+    [[PFInstallation currentInstallation]saveInBackground];
     
     CBAPNType notificationType = (CBAPNType)[[userInfo objectForKey:CBAPNTypeKey]intValue];
     NSString *convoID = [userInfo objectForKey:CBAPNConvoIDKey];

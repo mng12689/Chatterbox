@@ -135,7 +135,7 @@
     [query orderByAscending:ParseObjectCreatedAtKey];
     
     [query getFirstObjectInBackgroundWithBlock:^(PFObject *conversation, NSError *error){
-        BOOL isNoResultsError = [[[error userInfo] valueForKey:@"code"] intValue] == 101;
+        BOOL isNoResultsError = error.code == kPFErrorObjectNotFound;
         if (!error || isNoResultsError){
             NSString *alertTitle;
             NSString *alertMessage;

@@ -8,7 +8,6 @@
 
 #import "AuthenticationViewController.h"
 #import <Parse/Parse.h>
-#import "ChatterboxDataStore.h"
 #import "EditableCell.h"
 #import "BlocksKit.h"
 #import "CBCommons.h"

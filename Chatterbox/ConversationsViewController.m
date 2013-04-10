@@ -8,7 +8,6 @@
 
 #import "ConversationsViewController.h"
 #import <Parse/Parse.h>
-#import "DialogueViewController.h"
 #import "TestViewController.h"
 #import "LastMessageCell.h"
 #import <QuartzCore/QuartzCore.h>

@@ -29,7 +29,6 @@
 		4C0B9A1A1636477000EC7246 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C0B9A181636477000EC7246 /* InfoPlist.strings */; };
 		4C0B9A1C1636477000EC7246 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C0B9A1B1636477000EC7246 /* main.m */; };
 		4C0B9A201636477000EC7246 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C0B9A1F1636477000EC7246 /* AppDelegate.m */; };
-		4C0B9A231636477000EC7246 /* Chatterbox.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4C0B9A211636477000EC7246 /* Chatterbox.xcdatamodeld */; };
 		4C0B9A2B1636481A00EC7246 /* HomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4C0B9A2A1636481A00EC7246 /* HomeViewController.m */; };
 		4C0B9A2D16364C0000EC7246 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C0B9A2C16364C0000EC7246 /* QuartzCore.framework */; };
 		4C0B9A36163661CF00EC7246 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C0B9A35163661CF00EC7246 /* AudioToolbox.framework */; };
@@ -71,9 +70,6 @@
 		4CDAB5091637328500E57A7D /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CDAB5081637328500E57A7D /* Social.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		4CDAB50E1637398300E57A7D /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4CDAB50D1637398300E57A7D /* Default-568h@2x.png */; };
 		4CDAB5121637C97500E57A7D /* ConversationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CDAB5101637C97500E57A7D /* ConversationsViewController.m */; };
-		4CEC72ED1659778200B37117 /* CBConversation.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CEC72EC1659778200B37117 /* CBConversation.m */; };
-		4CEC72F016597E4100B37117 /* ChatterboxDataStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CEC72EF16597E4100B37117 /* ChatterboxDataStore.m */; };
-		4CEC730216602DD200B37117 /* DialogueViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CEC730116602DD200B37117 /* DialogueViewController.m */; };
 		4CEC73051661CE4A00B37117 /* TestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CEC73041661CE4A00B37117 /* TestViewController.m */; };
 		4CFE51D116AE1192009B627C /* CBCommons.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CFE51D016AE1192009B627C /* CBCommons.m */; };
 		4CFE51D316C0A7C2009B627C /* speech_bubble_orange@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4CFE51D216C0A7C2009B627C /* speech_bubble_orange@2x.png */; };
@@ -88,7 +84,6 @@
 		4CFE520316C564A3009B627C /* movies_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4CFE520216C564A3009B627C /* movies_icon@2x.png */; };
 		4CFE520516C565FE009B627C /* fashion_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4CFE520416C565FE009B627C /* fashion_icon@2x.png */; };
 		4CFE522816C586CD009B627C /* EditableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CFE522716C586CD009B627C /* EditableCell.m */; };
-		4CFE524016C5A48A009B627C /* CBMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CFE523F16C5A48A009B627C /* CBMessage.m */; };
 		D0B3B4DE4C974B5FBC29E64C /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 999ABDEBA13445C9821F9D0A /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -119,7 +114,6 @@
 		4C0B9A1D1636477000EC7246 /* Chatterbox-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Chatterbox-Prefix.pch"; sourceTree = "<group>"; };
 		4C0B9A1E1636477000EC7246 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		4C0B9A1F1636477000EC7246 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		4C0B9A221636477000EC7246 /* Chatterbox.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Chatterbox.xcdatamodel; sourceTree = "<group>"; };
 		4C0B9A291636481A00EC7246 /* HomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HomeViewController.h; sourceTree = "<group>"; };
 		4C0B9A2A1636481A00EC7246 /* HomeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HomeViewController.m; sourceTree = "<group>"; };
 		4C0B9A2C16364C0000EC7246 /* QuartzCore.framework */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -167,12 +161,6 @@
 		4CDAB50D1637398300E57A7D /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		4CDAB50F1637C97500E57A7D /* ConversationsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConversationsViewController.h; sourceTree = "<group>"; };
 		4CDAB5101637C97500E57A7D /* ConversationsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConversationsViewController.m; sourceTree = "<group>"; };
-		4CEC72EB1659778200B37117 /* CBConversation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBConversation.h; sourceTree = "<group>"; };
-		4CEC72EC1659778200B37117 /* CBConversation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBConversation.m; sourceTree = "<group>"; };
-		4CEC72EE16597E4100B37117 /* ChatterboxDataStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChatterboxDataStore.h; sourceTree = "<group>"; };
-		4CEC72EF16597E4100B37117 /* ChatterboxDataStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChatterboxDataStore.m; sourceTree = "<group>"; };
-		4CEC730016602DD200B37117 /* DialogueViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DialogueViewController.h; sourceTree = "<group>"; };
-		4CEC730116602DD200B37117 /* DialogueViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DialogueViewController.m; sourceTree = "<group>"; };
 		4CEC73031661CE4900B37117 /* TestViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestViewController.h; sourceTree = "<group>"; };
 		4CEC73041661CE4A00B37117 /* TestViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestViewController.m; sourceTree = "<group>"; };
 		4CFE51CF16AE1192009B627C /* CBCommons.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBCommons.h; sourceTree = "<group>"; };
@@ -191,8 +179,6 @@
 		4CFE520416C565FE009B627C /* fashion_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "fashion_icon@2x.png"; sourceTree = "<group>"; };
 		4CFE522616C586CD009B627C /* EditableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditableCell.h; sourceTree = "<group>"; };
 		4CFE522716C586CD009B627C /* EditableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EditableCell.m; sourceTree = "<group>"; };
-		4CFE523A16C5A37E009B627C /* CBMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBMessage.h; sourceTree = "<group>"; };
-		4CFE523F16C5A48A009B627C /* CBMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBMessage.m; sourceTree = "<group>"; };
 		999ABDEBA13445C9821F9D0A /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9D157B191E1444C979F497F /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -349,7 +335,6 @@
 				4C6B637D167EC27800539A8A /* Conversations */,
 				4C6B637E167EC28800539A8A /* Single Conversation */,
 				4C6B637F167EC2A400539A8A /* Login */,
-				4C6B637A167EC20500539A8A /* Core Data */,
 				4C0B9A161636477000EC7246 /* Supporting Files */,
 			);
 			path = Chatterbox;
@@ -375,36 +360,6 @@
 			name = Home;
 			sourceTree = "<group>";
 		};
-		4C6B637A167EC20500539A8A /* Core Data */ = {
-			isa = PBXGroup;
-			children = (
-				4C0B9A211636477000EC7246 /* Chatterbox.xcdatamodeld */,
-				4C6B637B167EC22200539A8A /* Data Store */,
-				4C6B637C167EC22F00539A8A /* NSManagedObjects */,
-			);
-			name = "Core Data";
-			sourceTree = "<group>";
-		};
-		4C6B637B167EC22200539A8A /* Data Store */ = {
-			isa = PBXGroup;
-			children = (
-				4CEC72EE16597E4100B37117 /* ChatterboxDataStore.h */,
-				4CEC72EF16597E4100B37117 /* ChatterboxDataStore.m */,
-			);
-			name = "Data Store";
-			sourceTree = "<group>";
-		};
-		4C6B637C167EC22F00539A8A /* NSManagedObjects */ = {
-			isa = PBXGroup;
-			children = (
-				4CFE523A16C5A37E009B627C /* CBMessage.h */,
-				4CFE523F16C5A48A009B627C /* CBMessage.m */,
-				4CEC72EB1659778200B37117 /* CBConversation.h */,
-				4CEC72EC1659778200B37117 /* CBConversation.m */,
-			);
-			name = NSManagedObjects;
-			sourceTree = "<group>";
-		};
 		4C6B637D167EC27800539A8A /* Conversations */ = {
 			isa = PBXGroup;
 			children = (
@@ -419,8 +374,6 @@
 		4C6B637E167EC28800539A8A /* Single Conversation */ = {
 			isa = PBXGroup;
 			children = (
-				4CEC730016602DD200B37117 /* DialogueViewController.h */,
-				4CEC730116602DD200B37117 /* DialogueViewController.m */,
 				4CEC73031661CE4900B37117 /* TestViewController.h */,
 				4CEC73041661CE4A00B37117 /* TestViewController.m */,
 				4C6B6380167EC31800539A8A /* MessageCell.h */,
@@ -599,12 +552,8 @@
 			files = (
 				4C0B9A1C1636477000EC7246 /* main.m in Sources */,
 				4C0B9A201636477000EC7246 /* AppDelegate.m in Sources */,
-				4C0B9A231636477000EC7246 /* Chatterbox.xcdatamodeld in Sources */,
 				4C0B9A2B1636481A00EC7246 /* HomeViewController.m in Sources */,
 				4CDAB5121637C97500E57A7D /* ConversationsViewController.m in Sources */,
-				4CEC72ED1659778200B37117 /* CBConversation.m in Sources */,
-				4CEC72F016597E4100B37117 /* ChatterboxDataStore.m in Sources */,
-				4CEC730216602DD200B37117 /* DialogueViewController.m in Sources */,
 				4CEC73051661CE4A00B37117 /* TestViewController.m in Sources */,
 				4C4CF5721675A3E90000C290 /* ParseCenter.m in Sources */,
 				4C6B6382167EC31800539A8A /* MessageCell.m in Sources */,
@@ -612,7 +561,6 @@
 				4CFE51D116AE1192009B627C /* CBCommons.m in Sources */,
 				4CFE51F316C4CBE3009B627C /* AuthenticationViewController.m in Sources */,
 				4CFE522816C586CD009B627C /* EditableCell.m in Sources */,
-				4CFE524016C5A48A009B627C /* CBMessage.m in Sources */,
 				4C12992216FBFA5E00B9EBC9 /* NSError+ParseErrorCodes.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -748,19 +696,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCVersionGroup section */
-		4C0B9A211636477000EC7246 /* Chatterbox.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				4C0B9A221636477000EC7246 /* Chatterbox.xcdatamodel */,
-			);
-			currentVersion = 4C0B9A221636477000EC7246 /* Chatterbox.xcdatamodel */;
-			path = Chatterbox.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = 4C0B9A001636477000EC7246 /* Project object */;
 }
